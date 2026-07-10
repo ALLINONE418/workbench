@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOYO 工作台</title>
+<style>
+  :root{
+    --bg:#f4f6f1; --side:#fbfcfa; --card:#ffffff; --border:#e3e8dd;
+    --text:#2f3b2c; --muted:#8a9683;
+    --green:#6f9c5a; --green-l:#e8f0e0; --green-d:#4e7a3c;
+    --red:#c0562f; --amber:#b5892b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;font-size:15.5px;display:flex;min-height:100vh}
+
+  aside{width:240px;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 10px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--green);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .brand .t1{font-weight:700;font-size:16.5px}
+  .brand .t2{font-size:12px;color:var(--muted);letter-spacing:1px}
+  .navgroup{font-size:12px;color:var(--muted);padding:12px 10px 5px;letter-spacing:.5px}
+  .navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text);font-size:15px;margin-bottom:2px;user-select:none}
+  .navitem:hover{background:var(--green-l)}
+  .navitem.active{background:var(--green-l);color:var(--green-d);font-weight:600}
+  .navitem .num{width:18px;color:var(--muted);font-size:13px}
+  .navitem.active .num{color:var(--green-d)}
+  .navitem .badge{margin-left:auto;background:var(--green);color:#fff;font-size:12px;padding:2px 8px;border-radius:10px}
+  .navitem .badge.gray{background:#d6ddce;color:#5c6853}
+  .status{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px}
+  .status .lead{color:var(--muted);margin-bottom:8px}
+  .status b{color:var(--green-d)}
+
+  main{flex:1;padding:22px 28px;overflow:auto}
+  .head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+  .head h1{font-size:22px}
+  .head .meta{color:var(--muted);font-size:13px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  .pill{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:7px 14px;font-size:14px;cursor:pointer;color:var(--text)}
+  .pill.on{background:var(--green-l);border-color:var(--green);color:var(--green-d);font-weight:600}
+  .pill .c{color:var(--muted);margin-left:5px}
+  .pick{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:7px 16px;font-size:14.5px}
+  .pick input{border:none;background:transparent;font:inherit;color:var(--green-d);font-weight:600;outline:none}
+
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+  .panel h3{font-size:16px;margin-bottom:12px;color:var(--green-d)}
+
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .kpi{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px}
+  .kpi .v{font-size:20px;font-weight:700}
+  .kpi .l{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .pos{color:var(--green-d)} .neg{color:var(--red)}
+  .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:14.5px}
+  .row:last-child{border:none}
+  .note{font-size:13px;color:var(--muted)}
+  .tag{display:inline-block;font-size:12px;padding:3px 9px;border-radius:6px;margin-left:6px}
+  .tag.ok{background:var(--green-l);color:var(--green-d)}
+  .tag.bad{background:#f6e0d6;color:var(--red)}
+  .summary{margin-top:12px;padding:13px;background:var(--bg);border-left:3px solid var(--amber);border-radius:6px;font-size:14.5px;line-height:1.75}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+  .card .name{font-weight:600;font-size:15.5px}
+  .card .name a{color:var(--text);text-decoration:none}
+  .card .line{font-size:13.5px;color:var(--muted);margin-top:5px;line-height:1.6}
+  .card .foot{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .stars{color:var(--amber);font-size:13px}
+  .diff{font-size:12px;padding:3px 10px;border-radius:6px;background:var(--green-l);color:var(--green-d)}
+  code{background:#f0f3ec;padding:3px 8px;border-radius:5px;font-size:12px;color:var(--green-d)}
+
+  .badge2{font-size:12px;padding:4px 11px;border-radius:6px;display:inline-block}
+  .badge2.done{background:var(--green-l);color:var(--green-d)}
+  .badge2.pending{background:#f6efdd;color:var(--amber)}
+  .topic{font-size:14.5px;line-height:1.75;margin-bottom:14px;padding:13px;background:var(--bg);border-radius:8px}
+
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:500;font-size:13px}
+  .vb{font-size:12px;padding:2px 9px;border-radius:6px}
+  .vb.爆{background:#dcece6;color:#2f7d5b} .vb.好{background:var(--green-l);color:var(--green-d)} .vb.差{background:#f6e0d6;color:var(--red)}
+
+  /* 选题库 */
+  .tp{display:flex;align-items:center;gap:10px;padding:12px 8px;border-bottom:1px solid var(--border);font-size:14.5px}
+  .tp:last-child{border:none}
+  .tp .ttl{flex:1;font-weight:500}
+  .tp.good{background:#f1f7ea;border-radius:6px}
+  .acts{display:flex;gap:6px}
+  .act{width:32px;height:32px;border:1px solid var(--border);background:var(--card);border-radius:7px;cursor:pointer;font-size:16px;line-height:1;color:var(--muted);transition:.15s}
+  .act.del:hover{color:#fff;background:var(--red);border-color:var(--red)}
+  .act.keep:hover,.act.keep.on{color:#fff;background:var(--amber);border-color:var(--amber)}
+  .act.send:hover,.act.send.on{color:#fff;background:var(--green);border-color:var(--green)}
+
+  /* 视频工作流 */
+  .wfbtns{display:flex;gap:8px;margin-top:12px}
+  .wbtn{padding:8px 20px;border:1px solid var(--green);background:var(--green-l);color:var(--green-d);border-radius:8px;cursor:pointer;font-size:14.5px;font-family:inherit}
+  .wbtn:hover{background:var(--green);color:#fff}
+  .wbtn[disabled]{opacity:.45;cursor:not-allowed;border-color:var(--border);background:var(--card);color:var(--muted)}
+  .wbtn.ghost{background:var(--card);border-color:var(--border);color:var(--muted)}
+  .wbtn.ghost:hover{background:var(--bg);color:var(--red);border-color:var(--red)}
+  .stages{display:flex;gap:8px;flex-wrap:wrap}
+
+  .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
+  .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
+  .placeholder .pd{color:var(--muted);font-size:14px;line-height:1.75}
+  .src{display:inline-block;margin-top:12px;font-size:12px;color:var(--green-d);background:var(--green-l);padding:4px 10px;border-radius:6px}
+
+  svg .grid{stroke:var(--border)} svg text{font-size:11px;fill:var(--muted)}
+
+  #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--green-d);color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:60}
+  #toast.show{opacity:1}
+  #gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100}
+  .gatebox{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:34px 30px;width:320px;text-align:center;box-shadow:0 8px 30px rgba(60,80,45,.12)}
+  .gatebox .glogo{width:52px;height:52px;border-radius:14px;background:var(--green);color:#fff;font-weight:700;font-size:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .gatebox h2{font-size:18px;margin-bottom:6px}
+  .gatebox p{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .gatebox input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;outline:none;text-align:center}
+  .gatebox input:focus{border-color:var(--green)}
+  .gatebox button{width:100%;margin-top:12px;padding:11px;border:none;border-radius:10px;background:var(--green);color:#fff;font-size:15px;font-family:inherit;cursor:pointer}
+  .gatebox button:hover{background:var(--green-d)}
+  .gerr{color:var(--red);font-size:13px;margin-top:10px;min-height:18px}
+  #modal{position:fixed;inset:0;background:rgba(30,40,25,.45);display:none;align-items:center;justify-content:center;z-index:50}
+  #modal.show{display:flex}
+  .modalbox{background:var(--card);border-radius:14px;padding:24px;max-width:520px;width:90%}
+  .modalbox h3{color:var(--green-d);margin-bottom:12px}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">
+    <div class="logo">Y</div>
+    <div><div class="t1">YOYO 工作台</div><div class="t2">YOYO STUDIO</div></div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="status">
+    <div class="lead">数据状态</div>
+    更新于 <b id="stUpdated"></b><br>
+    <span class="note">各流水线写入 data.js</span>
+  </div>
+</aside>
+
+<main>
+  <div class="head"><h1 id="mTitle"></h1><div class="meta" id="mMeta"></div></div>
+  <div id="mBody"></div>
+</main>
+
+<div id="gate">
+  <div class="gatebox">
+    <div class="glogo">Y</div>
+    <h2>YOYO 工作台</h2>
+    <p>请输入访问密码</p>
+    <input type="password" id="gpass" placeholder="密码" autocomplete="off">
+    <button onclick="tryUnlock()">进入</button>
+    <div class="gerr" id="gerr"></div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
+
+<script src="data.js"></script>
+<script>
+const D = window.WORKBENCH_DATA;
+const $ = id => document.getElementById(id);
+const yuan = n => (n>=0?"+":"") + n.toLocaleString() + " 元";
+
+// ===== 本地状态（用户操作持久化）=====
+const LS = {
+  del:   JSON.parse(localStorage.getItem("wb_del")   || "[]"),
+  good:  JSON.parse(localStorage.getItem("wb_good")  || "[]"),
+  queue: JSON.parse(localStorage.getItem("wb_queue") || "[]")
+};
+function save(){
+  localStorage.setItem("wb_del",  JSON.stringify(LS.del));
+  localStorage.setItem("wb_good", JSON.stringify(LS.good));
+  localStorage.setItem("wb_queue",JSON.stringify(LS.queue));
+}
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),1800); }
+function openModal(html){ $("modalbox").innerHTML=html; $("modal").classList.add("show"); }
+function closeModal(e){ if(e && e.currentTarget===$("modal") && e.target!==$("modal")) return; $("modal").classList.remove("show"); }
+
+// ===== 导航配置（加模块 = 加一行）=====
+const NAV = [
+  {group:"交易复盘"},
+  {id:"review",  num:1, label:"每日复盘", badge:"今日", render:renderReview},
+  {id:"monthly", num:2, label:"月度复盘", badge:"月度", render:renderMonthly},
+  {id:"mistakes",num:3, label:"错误合集", badge:0, gray:true, render:renderTodo, desc:"重大交易错误归档。从 Obsidian 的 mistake 文件夹导入，未来新错误持续追加，可按类型/复发频次统计，与每日复盘的行为诊断联动。", src:"数据源：Obsidian / mistake"},
+  {group:"学习成长"},
+  {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
+  {id:"skills",  num:5, label:"Skills 管理", badge:0, gray:true, render:renderTodo, desc:"你收藏/在用的 Claude Skills 与工具清单，标注用途与掌握度。"},
+  {id:"reading", num:6, label:"读书笔记", badge:0, gray:true, render:renderTodo, desc:"从微信读书同步：在读 / 想读 / 已读书单，并汇总过往读书笔记，可作为选题来源。", src:"数据源：微信读书"},
+  {group:"内容运营"},
+  {id:"topics",  num:7, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
+  {id:"video",   num:8, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
+  {id:"publish", num:9, label:"发布记录", badge:"分析", render:renderPublish},
+  {group:"资讯聚合 · All in One"},
+  {id:"feedVideo",num:10,label:"最新视频", badge:"周", render:renderFeedVideo},
+  {group:"邮箱合集"},
+  {id:"mail",    num:11,label:"重要邮件", badge:()=>D.mail.items.length, render:renderMail},
+];
+
+$("stUpdated").textContent = D.updatedAt;
+let activeId = "review";
+
+function buildNav(){
+  let h="";
+  NAV.forEach(n=>{
+    if(n.group){ h += `<div class="navgroup">${n.group}</div>`; return; }
+    let b = typeof n.badge==="function" ? n.badge() : n.badge;
+    const badge = (b===0||b===""||b==null) ? "" : `<span class="badge ${n.gray?'gray':''}">${b}</span>`;
+    h += `<div class="navitem ${n.id===activeId?'active':''}" data-id="${n.id}"><span class="num">${n.num}</span>${n.label}${badge}</div>`;
+  });
+  $("nav").innerHTML = h;
+}
+buildNav();
+
+function go(id){
+  activeId = id;
+  const item = NAV.find(n=>n.id===id);
+  buildNav();
+  $("mTitle").textContent = item.label;
+  $("mMeta").textContent = "A股股指期货 / 内容运营 · 单机版";
+  $("mBody").innerHTML = item.render(item);
+}
+$("nav").addEventListener("click",e=>{ const it=e.target.closest(".navitem"); if(it) go(it.dataset.id); });
+
+// 选题库操作（事件委托）
+document.addEventListener("click", e=>{
+  const btn=e.target.closest(".act"); if(!btn) return;
+  const t=D.topics[+btn.dataset.i];
+  if(btn.classList.contains("del")){ if(!LS.del.includes(t.title)) LS.del.push(t.title); save(); drawTopics(); buildNav(); toast("已删除"); }
+  else if(btn.classList.contains("keep")){ const k=LS.good.indexOf(t.title); k<0?LS.good.push(t.title):LS.good.splice(k,1); save(); drawTopics(); }
+  else if(btn.classList.contains("send")){ sendToWorkflow(t); }
+});
+
+// ===== 每日复盘 =====
+function renderReview(){
+  const d = D.defaultReviewDate;
+  return `<div class="bar"><div class="pick">📅 复盘日期 <input type="date" value="${d}" onchange="onReviewDate(this.value)"></div></div>
+    <div id="rvBody">${reviewBody(d)}</div>`;
+}
+window.onReviewDate = v => { $("rvBody").innerHTML = reviewBody(v); };
+function reviewBody(date){
+  const r = D.reviewByDate[date];
+  if(!r) return `<div class="placeholder"><div class="pt">${date} · 暂无复盘</div><div class="pd">该日期的复盘将在接入新湖期货 Excel 后自动生成（含买卖点标注图）。</div></div>`;
+  const kpis=[["净盈亏",yuan(r.netPnl),r.netPnl>=0?"pos":"neg"],["胜率",(r.winRate*100).toFixed(0)+"%",""],
+    ["盈亏比",r.profitFactor.toFixed(1),""],["期望值",yuan(r.expectancy),r.expectancy>=0?"pos":"neg"],
+    ["笔数",r.trades,""],["最大回撤",yuan(r.maxDrawdown),"neg"]];
+  return `
+  <div class="panel"><h3>${r.symbol} · ${date} 复盘笔记</h3>
+    <div class="kpis">${kpis.map(([l,v,c])=>`<div class="kpi"><div class="v ${c}">${v}</div><div class="l">${l}</div></div>`).join("")}</div></div>
+  <div class="panel"><h3>买卖点标注（绿√符合价格行为规则 / 红✗违纪）</h3>${reviewChart(r.points)}</div>
+  <div class="panel"><h3>Setup 分类（Al Brooks）</h3>
+    ${r.setups.map(s=>`<div class="row"><span>${s.name} <span class="note">×${s.count}</span></span><span class="${s.pnl>=0?'pos':'neg'}">${yuan(s.pnl)}</span></div><div class="note" style="padding-bottom:6px">${s.note}</div>`).join("")}</div>
+  <div class="panel"><h3>行为诊断</h3>
+    ${r.diagnosis.map(x=>`<div class="row"><span>${x.tag}<span class="tag ${x.hit?'bad':'ok'}">${x.hit?'触发':'达标'}</span></span><span class="note">${x.detail}</span></div>`).join("")}
+    <div class="summary">${r.summary}</div></div>`;
+}
+function reviewChart(points){
+  const W=720,H=260,pad=40, prices=points.map(p=>p.price);
+  const min=Math.min(...prices)-30, max=Math.max(...prices)+30;
+  const x=i=>pad+i*((W-2*pad)/(points.length-1)), y=v=>H-pad-((v-min)/(max-min))*(H-2*pad);
+  const line=points.map((p,i)=>`${x(i)},${y(p.price)}`).join(" ");
+  const marks=points.map((p,i)=>{const c=p.correct?"#4e7a3c":"#c0562f",s=p.correct?"✓":"✗";
+    return `<circle cx="${x(i)}" cy="${y(p.price)}" r="5" fill="${c}"/><text x="${x(i)}" y="${y(p.price)-10}" text-anchor="middle" fill="${c}">${p.side}${s}</text><text x="${x(i)}" y="${y(p.price)+18}" text-anchor="middle">${p.setup}</text>`;}).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%"><line class="grid" x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}"/><polyline points="${line}" fill="none" stroke="#b7c4a8" stroke-width="2"/>${marks}</svg>
+    <div class="note">示意图：接入新湖 Excel + 行情K线后，此处自动渲染真实K线并标注每笔买卖点。</div>`;
+}
+
+// ===== 月度复盘 =====
+function renderMonthly(){
+  const m = D.defaultMonth;
+  return `<div class="bar"><div class="pick">🗓 月份 <input type="month" value="${m}" onchange="onMonth(this.value)"></div></div>
+    <div id="mmBody">${monthlyBody(m)}</div>`;
+}
+window.onMonth = v => { $("mmBody").innerHTML = monthlyBody(v); };
+function monthlyBody(month){
+  const j = D.monthlyByMonth[month];
+  if(!j) return `<div class="placeholder"><div class="pt">${month} · 暂无数据</div><div class="pd">该月度复盘将在汇总当月每日复盘后自动生成。</div></div>`;
+  const kpis=[["净盈亏",yuan(j.netPnl),j.netPnl>=0?"pos":"neg"],["交易日",j.tradingDays,""],["总笔数",j.totalTrades,""],
+    ["胜率",(j.winRate*100).toFixed(0)+"%",""],["盈亏比",j.profitFactor.toFixed(1),""],["最大回撤",yuan(j.maxDD),"neg"]];
+  return `<div class="panel"><h3>${month} 月度汇总</h3>
+    <div class="kpis">${kpis.map(([l,v,c])=>`<div class="kpi"><div class="v ${c}">${v}</div><div class="l">${l}</div></div>`).join("")}</div></div>
+  <div class="panel"><h3>按 Setup 拆解</h3>
+    <table><tr><th>Setup</th><th>笔数</th><th>胜率</th><th>盈亏</th></tr>
+    ${j.bySetup.map(s=>`<tr><td>${s.name}</td><td>${s.trades}</td><td>${(s.winRate*100).toFixed(0)}%</td><td class="${s.pnl>=0?'pos':'neg'}">${yuan(s.pnl)}</td></tr>`).join("")}</table>
+    <div class="summary">${j.insight}</div></div>`;
+}
+
+// ===== AI 热点 =====
+function renderAI(){
+  return `<div class="bar"><span class="pill on">全部<span class="c">${D.ai.length}</span></span><span class="pill">可一键装</span><span class="pill">高价值 ★4+</span></div>` +
+    D.ai.map(a=>`<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a></div>
+      <div class="line"><b>需求</b>：${a.demand}</div><div class="line"><b>供应</b>：${a.supply}</div>
+      <div class="foot"><span class="stars">${"★".repeat(a.value)}${"☆".repeat(5-a.value)}</span><span class="diff">${a.difficulty}</span><code>${a.install}</code></div></div>`).join("");
+}
+
+// ===== 选题库（✓保留 / ✗删除 / →送入工作流）=====
+let topicCat = "全部";
+function renderTopics(){ setTimeout(drawTopics,0); return `<div class="bar" id="topicBar"></div><div id="topicList"></div>`; }
+window.pickTopic = c => { topicCat=c; drawTopics(); };
+function drawTopics(){
+  const vis = D.topics.filter(t=>!LS.del.includes(t.title));
+  const cats = ["全部", ...D.topicCats];
+  $("topicBar").innerHTML = cats.map(c=>{
+    const cnt = c==="全部" ? vis.length : vis.filter(t=>t.cat===c).length;
+    return `<span class="pill ${c===topicCat?'on':''}" onclick="pickTopic('${c}')">${c}<span class="c">${cnt}</span></span>`;
+  }).join("");
+  let list = topicCat==="全部" ? vis : vis.filter(t=>t.cat===topicCat);
+  list = list.slice().sort((a,b)=>(LS.good.includes(b.title)?1:0)-(LS.good.includes(a.title)?1:0));
+  const rows = list.map(t=>{
+    const i=D.topics.indexOf(t), good=LS.good.includes(t.title), inq=LS.queue.some(q=>q.title===t.title);
+    return `<div class="tp ${good?'good':''}">
+      <span class="ttl">${good?'⭐ ':''}${t.title}</span>
+      <span class="tag ok">${t.cat}</span>
+      <span class="acts">
+        <button class="act keep ${good?'on':''}" data-i="${i}" title="好选题·保留置顶">✓</button>
+        <button class="act del" data-i="${i}" title="删除该选题">✗</button>
+        <button class="act send ${inq?'on':''}" data-i="${i}" title="送入视频工作流">→</button>
+      </span></div>`;
+  }).join("") || '<div class="note">该分类暂无选题</div>';
+  $("topicList").innerHTML = `<div class="panel"><div class="note" style="margin-bottom:12px">每周一自动新增 20 条/分类 · <b>✓</b> 保留好选题（置顶加星） · <b>✗</b> 删除坏选题 · <b>→</b> 送入视频工作流</div>${rows}</div>`;
+}
+function sendToWorkflow(t){
+  if(LS.queue.some(q=>q.title===t.title)){ toast("该选题已在视频工作流中"); return; }
+  LS.queue.push({ title:t.title, cat:t.cat, orientation:"横版 16:9",
+    stages:{script:"pending",video:"pending",voice:"pending",music:"pending"},
+    added:new Date().toISOString().slice(0,10), file:"" });
+  save(); drawTopics(); buildNav(); toast("已送入视频工作流 →");
+}
+
+// ===== 视频工作流（队列 + 预览/下载）=====
+function renderVideo(){
+  const q=LS.queue;
+  const queueHtml = q.length
+    ? q.map((p,i)=>projectCard(p,i,false)).join("")
+    : `<div class="placeholder"><div class="pt">工作流队列为空</div><div class="pd">去 <b>选题库</b>，点某条选题右侧的 <b>→</b> 箭头，即可把它导入到这里，进入文案撰写 / 视频制作 / 配音 / 音乐 的流程。</div></div>`;
+  return `<div class="bar"><span class="pill on">队列<span class="c">${q.length}</span></span></div>
+    ${queueHtml}
+    <div class="note" style="margin:18px 0 8px">示例（已完成项目参考）</div>
+    ${projectCard(D.demoProject, -1, true)}`;
+}
+function projectCard(p, i, demo){
+  const st=p.stages, sb=(l,k)=>`<span class="badge2 ${st[k]==='done'?'done':'pending'}">${l}·${st[k]==='done'?'完成':'待做'}</span>`;
+  const dl = p.file
+    ? `<button class="wbtn" onclick="location.href='${p.file}'">下载</button>`
+    : `<button class="wbtn" disabled>下载</button>`;
+  const rm = demo ? "" : `<button class="wbtn ghost" onclick="rmProject(${i})">移除</button>`;
+  return `<div class="panel"><h3>${p.title} <span class="tag ok">${p.cat}</span> <span class="note">· ${p.orientation}${demo?' · 示例':''}</span></h3>
+    <div class="stages">${sb('文案','script')}${sb('视频','video')}${sb('配音','voice')}${sb('音乐','music')}</div>
+    <div class="wfbtns">
+      <button class="wbtn" onclick="previewProject(${demo?'\'demo\'':i})">预览</button>
+      ${dl}${rm}
+    </div></div>`;
+}
+window.rmProject = i => { LS.queue.splice(i,1); save(); go("video"); toast("已从工作流移除"); };
+window.previewProject = ref => {
+  const p = ref==='demo' ? D.demoProject : LS.queue[ref];
+  const st=p.stages, line=(l,k,a,b)=>`${l}：${st[k]==='done'?a:b}`;
+  openModal(`<h3>预览 · ${p.title}</h3>
+    <div class="note" style="margin-bottom:12px">分类 ${p.cat} ｜ ${p.orientation}${p.added?(' ｜ 加入 '+p.added):''}</div>
+    <div style="line-height:1.9;font-size:13px">
+      ${line('文案','script','已完成','待撰写')}<br>
+      ${line('视频','video','已合成','待制作')}<br>
+      ${line('配音','voice','已录制','待录制')}<br>
+      ${line('音乐','music','已配置','待添加')}
+    </div>
+    <div class="note" style="margin-top:12px">视频成品生成后，此处显示可播放预览，"下载"按钮同步激活。</div>
+    <div style="text-align:right;margin-top:16px"><button class="wbtn" onclick="closeModal()">关闭</button></div>`);
+};
+
+// ===== 发布记录 =====
+function renderPublish(){
+  const p=D.publish;
+  return `<div class="panel"><h3>发布数据</h3>
+    <table><tr><th>选题</th><th>点赞</th><th>评论</th><th>转发</th><th>时段</th><th>评级</th></tr>
+    ${p.posts.map(o=>`<tr><td>${o.title}</td><td>${o.likes}</td><td>${o.comments}</td><td>${o.shares}</td><td>${o.time}</td><td><span class="vb ${o.verdict}">${o.verdict}</span></td></tr>`).join("")}</table></div>
+  <div class="panel"><h3>分析结论</h3>
+    <div class="row"><span>表现最好选题</span><span class="pos">${p.bestTopic}</span></div>
+    <div class="row"><span>表现最差选题</span><span class="neg">${p.worstTopic}</span></div>
+    <div class="row"><span>最佳发布时段</span><span class="pos">${p.bestTime}</span></div>
+    <div class="row"><span>最差发布时段</span><span class="neg">${p.worstTime}</span></div></div>`;
+}
+
+// ===== 资讯聚合（实时拉取 All in One）=====
+const ALLINONE = "https://allinone418.github.io/data/";
+const WEEK = 7*24*3600*1000;
+const wan = n => n>=10000 ? (n/10000).toFixed(1)+"w" : n;
+const ymd = iso => (iso||"").slice(0,10);
+const mmss = s => s ? Math.floor(s/60)+":"+String(s%60).padStart(2,"0") : "";
+function fillWhen(id, html){ const el=$(id); if(el) el.innerHTML=html; }
+function renderFeedVideo(){ loadVideos(); return `<div id="fvBody"><div class="note">正在从 All in One 拉取视频…</div></div>`; }
+async function loadVideos(){
+  try{
+    const r = await fetch(ALLINONE+"videos.json?_="+Date.now());
+    const j = await r.json();
+    let vids=[];
+    (j.channels||[]).forEach(c=>(c.videos||[]).forEach(v=>vids.push({...v,channel:c.channel_name})));
+    vids.sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+    const cut=Date.now()-WEEK;
+    let list=vids.filter(v=>new Date(v.published_at).getTime()>=cut);
+    let note=`最新一周 · 共 ${list.length} 条`;
+    if(list.length<6){ list=vids.slice(0,12); note=`近一周更新较少，展示最新 ${list.length} 条`; }
+    fillWhen("fvBody", `<div class="panel"><h3>视频 · ${note}</h3><table><tr><th>标题</th><th>频道</th><th>发布</th><th>时长</th><th>播放</th><th>点赞</th></tr>
+      ${list.map(v=>`<tr><td><a href="${v.url}" target="_blank" style="color:var(--green-d);text-decoration:none">${v.title}</a></td>
+      <td class="note">${v.channel}</td><td class="note">${ymd(v.published_at)}</td><td class="note">${mmss(v.duration_seconds)}</td><td>${wan(v.view_count)}</td><td>${wan(v.like_count)}</td></tr>`).join("")}</table>
+      <div class="note" style="margin-top:10px">实时来自 All in One / videos.json，19 个频道聚合。</div></div>`);
+  }catch(e){ fillWhen("fvBody", `<div class="placeholder"><div class="pt">加载失败</div><div class="pd">${e}。请通过 http://localhost:5178 或已部署页面访问（本地双击 file:// 无法跨域）。</div></div>`); }
+}
+
+// ===== 邮箱合集 =====
+function renderMail(){
+  const m=D.mail;
+  return `<div class="bar">${m.accounts.map(a=>`<span class="pill on">${a}</span>`).join("")}</div>
+  <div class="panel"><h3>重要关注对象（Watchlist）</h3>
+    ${m.watchlist.map(w=>`<span class="diff" style="margin:0 6px 6px 0;display:inline-block">${w}</span>`).join("")}
+    <div class="note" style="margin-top:8px">只抓取以上发件人的邮件，其余忽略。</div></div>
+  <div class="panel"><h3>重要邮件</h3><table><tr><th>发件人</th><th>主题</th><th>账户</th><th>时间</th></tr>
+    ${m.items.map(i=>`<tr><td><b>${i.from}</b></td><td>${i.subject}</td><td>${i.account}</td><td class="note">${i.time}</td></tr>`).join("")}</table></div>`;
+}
+
+// ===== 占位模块 =====
+function renderTodo(item){
+  return `<div class="placeholder"><div class="pt">${item.label} · 待接入</div>
+    <div class="pd">${item.desc||"此模块已在导航占位，随时可填入数据。"}</div>
+    ${item.src?`<span class="src">${item.src}</span>`:""}</div>`;
+}
+
+// ===== 访问密码门 =====
+const PASS_HASH = "072ddf780dd1b2e20c6935861f1deef8ccebb323ea406335d60aa4bb13a98c1a"; // 默认密码 yoyo905，改密码把新密码告诉我重算即可
+async function sha(s){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+async function tryUnlock(){
+  const v=$("gpass").value;
+  if(await sha(v)===PASS_HASH){ sessionStorage.setItem("wb_auth","1"); unlock(); }
+  else { $("gerr").textContent="密码不对"; $("gpass").value=""; $("gpass").focus(); }
+}
+function unlock(){ $("gate").style.display="none"; go("review"); }
+$("gpass").addEventListener("keydown",e=>{ if(e.key==="Enter") tryUnlock(); });
+
+if(sessionStorage.getItem("wb_auth")==="1"){ unlock(); }
+else { $("gpass").focus(); }
+</script>
+</body>
+</html>
