@@ -1,5 +1,5 @@
 window.TRENDS_DATA = {
-  "updatedAt": "2026-07-10 23:06",
+  "updatedAt": "2026-07-10 23:13",
   "items": [
     {
       "name": "openclaw/openclaw",
@@ -14,7 +14,7 @@ window.TRENDS_DATA = {
     {
       "name": "obra/superpowers",
       "url": "https://github.com/obra/superpowers",
-      "stars": 251554,
+      "stars": 251557,
       "demand": "An agentic skills framework & software development methodology that works.",
       "supply": "ai、brainstorming、coding、obra、sdlc",
       "value": 3,
@@ -24,7 +24,7 @@ window.TRENDS_DATA = {
     {
       "name": "affaan-m/ECC",
       "url": "https://github.com/affaan-m/ECC",
-      "stars": 228171,
+      "stars": 228173,
       "demand": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
       "supply": "ai-agents、anthropic、claude、claude-code、developer-tools",
       "value": 3,
@@ -34,7 +34,7 @@ window.TRENDS_DATA = {
     {
       "name": "NousResearch/hermes-agent",
       "url": "https://github.com/NousResearch/hermes-agent",
-      "stars": 212612,
+      "stars": 212614,
       "demand": "The agent that grows with you",
       "supply": "ai、ai-agent、ai-agents、anthropic、chatgpt",
       "value": 3,
@@ -64,7 +64,7 @@ window.TRENDS_DATA = {
     {
       "name": "anomalyco/opencode",
       "url": "https://github.com/anomalyco/opencode",
-      "stars": 184473,
+      "stars": 184478,
       "demand": "The open source coding agent.",
       "supply": "见仓库",
       "value": 3,
@@ -84,7 +84,7 @@ window.TRENDS_DATA = {
     {
       "name": "f/prompts.chat",
       "url": "https://github.com/f/prompts.chat",
-      "stars": 165284,
+      "stars": 165286,
       "demand": "f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source — self-host for your organization with complete privacy.",
       "supply": "ai、artificial-intelligence、awesome-list、chatgpt、chatgpt-prompts",
       "value": 3,
@@ -104,7 +104,7 @@ window.TRENDS_DATA = {
     {
       "name": "anthropics/skills",
       "url": "https://github.com/anthropics/skills",
-      "stars": 160053,
+      "stars": 160055,
       "demand": "Public repository for Agent Skills",
       "supply": "agent-skills",
       "value": 3,
