@@ -1,5 +1,5 @@
 window.TRENDS_DATA = {
-  "updatedAt": "2026-07-10 22:45",
+  "updatedAt": "2026-07-10 23:06",
   "items": [
     {
       "name": "openclaw/openclaw",
@@ -14,7 +14,7 @@ window.TRENDS_DATA = {
     {
       "name": "obra/superpowers",
       "url": "https://github.com/obra/superpowers",
-      "stars": 251545,
+      "stars": 251554,
       "demand": "An agentic skills framework & software development methodology that works.",
       "supply": "ai、brainstorming、coding、obra、sdlc",
       "value": 3,
@@ -24,7 +24,7 @@ window.TRENDS_DATA = {
     {
       "name": "affaan-m/ECC",
       "url": "https://github.com/affaan-m/ECC",
-      "stars": 228168,
+      "stars": 228171,
       "demand": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
       "supply": "ai-agents、anthropic、claude、claude-code、developer-tools",
       "value": 3,
@@ -34,7 +34,7 @@ window.TRENDS_DATA = {
     {
       "name": "NousResearch/hermes-agent",
       "url": "https://github.com/NousResearch/hermes-agent",
-      "stars": 212603,
+      "stars": 212612,
       "demand": "The agent that grows with you",
       "supply": "ai、ai-agent、ai-agents、anthropic、chatgpt",
       "value": 3,
@@ -44,7 +44,7 @@ window.TRENDS_DATA = {
     {
       "name": "n8n-io/n8n",
       "url": "https://github.com/n8n-io/n8n",
-      "stars": 195941,
+      "stars": 195943,
       "demand": "Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, self-host or cloud, 400+ integrations.",
       "supply": "ai、apis、automation、cli、data-flow",
       "value": 3,
@@ -64,7 +64,7 @@ window.TRENDS_DATA = {
     {
       "name": "anomalyco/opencode",
       "url": "https://github.com/anomalyco/opencode",
-      "stars": 184470,
+      "stars": 184473,
       "demand": "The open source coding agent.",
       "supply": "见仓库",
       "value": 3,
@@ -74,7 +74,7 @@ window.TRENDS_DATA = {
     {
       "name": "ollama/ollama",
       "url": "https://github.com/ollama/ollama",
-      "stars": 175866,
+      "stars": 175865,
       "demand": "Get up and running with Kimi-K2.6, GLM-5.1, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
       "supply": "deepseek、gemma、gemma3、glm、go",
       "value": 3,
@@ -84,7 +84,7 @@ window.TRENDS_DATA = {
     {
       "name": "f/prompts.chat",
       "url": "https://github.com/f/prompts.chat",
-      "stars": 165283,
+      "stars": 165284,
       "demand": "f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source — self-host for your organization with complete privacy.",
       "supply": "ai、artificial-intelligence、awesome-list、chatgpt、chatgpt-prompts",
       "value": 3,
@@ -94,7 +94,7 @@ window.TRENDS_DATA = {
     {
       "name": "huggingface/transformers",
       "url": "https://github.com/huggingface/transformers",
-      "stars": 162447,
+      "stars": 162446,
       "demand": "🤗 Transformers: the model-definition framework for state-of-the-art machine learning models in text, vision, audio, and multimodal models, for both inference and training. ",
       "supply": "audio、deep-learning、deepseek、gemma、glm",
       "value": 3,
@@ -104,7 +104,7 @@ window.TRENDS_DATA = {
     {
       "name": "anthropics/skills",
       "url": "https://github.com/anthropics/skills",
-      "stars": 160048,
+      "stars": 160053,
       "demand": "Public repository for Agent Skills",
       "supply": "agent-skills",
       "value": 3,
@@ -114,7 +114,7 @@ window.TRENDS_DATA = {
     {
       "name": "Snailclimb/JavaGuide",
       "url": "https://github.com/Snailclimb/JavaGuide",
-      "stars": 156935,
+      "stars": 156936,
       "demand": "Java 面试 & 后端通用面试指南，覆盖计算机基础、数据库、分布式、高并发、系统设计与 AI 应用开发",
       "supply": "agent、ai、context-engineering、deepseek、interview",
       "value": 3,
