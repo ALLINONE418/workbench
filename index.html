@@ -156,6 +156,7 @@
 <div id="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
 
 <script src="data.js"></script>
+<script src="data/trends.js"></script>
 <script>
 const D = window.WORKBENCH_DATA;
 const $ = id => document.getElementById(id);
@@ -163,14 +164,16 @@ const yuan = n => (n>=0?"+":"") + n.toLocaleString() + " 元";
 
 // ===== 本地状态（用户操作持久化）=====
 const LS = {
-  del:   JSON.parse(localStorage.getItem("wb_del")   || "[]"),
-  good:  JSON.parse(localStorage.getItem("wb_good")  || "[]"),
-  queue: JSON.parse(localStorage.getItem("wb_queue") || "[]")
+  del:    JSON.parse(localStorage.getItem("wb_del")    || "[]"),
+  good:   JSON.parse(localStorage.getItem("wb_good")   || "[]"),
+  queue:  JSON.parse(localStorage.getItem("wb_queue")  || "[]"),
+  skills: JSON.parse(localStorage.getItem("wb_skills") || "[]")
 };
 function save(){
-  localStorage.setItem("wb_del",  JSON.stringify(LS.del));
-  localStorage.setItem("wb_good", JSON.stringify(LS.good));
-  localStorage.setItem("wb_queue",JSON.stringify(LS.queue));
+  localStorage.setItem("wb_del",   JSON.stringify(LS.del));
+  localStorage.setItem("wb_good",  JSON.stringify(LS.good));
+  localStorage.setItem("wb_queue", JSON.stringify(LS.queue));
+  localStorage.setItem("wb_skills",JSON.stringify(LS.skills));
 }
 function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),1800); }
 function openModal(html){ $("modalbox").innerHTML=html; $("modal").classList.add("show"); }
@@ -184,7 +187,7 @@ const NAV = [
   {id:"mistakes",num:3, label:"错误合集", badge:0, gray:true, render:renderTodo, desc:"重大交易错误归档。从 Obsidian 的 mistake 文件夹导入，未来新错误持续追加，可按类型/复发频次统计，与每日复盘的行为诊断联动。", src:"数据源：Obsidian / mistake"},
   {group:"学习成长"},
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
-  {id:"skills",  num:5, label:"Skills 管理", badge:0, gray:true, render:renderTodo, desc:"你收藏/在用的 Claude Skills 与工具清单，标注用途与掌握度。"},
+  {id:"skills",  num:5, label:"Skills 管理", badge:()=>LS.skills.length, render:renderSkills},
   {id:"reading", num:6, label:"读书笔记", badge:0, gray:true, render:renderTodo, desc:"从微信读书同步：在读 / 想读 / 已读书单，并汇总过往读书笔记，可作为选题来源。", src:"数据源：微信读书"},
   {group:"内容运营"},
   {id:"topics",  num:7, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
@@ -284,13 +287,47 @@ function monthlyBody(month){
     <div class="summary">${j.insight}</div></div>`;
 }
 
-// ===== AI 热点 =====
-function renderAI(){
-  return `<div class="bar"><span class="pill on">全部<span class="c">${D.ai.length}</span></span><span class="pill">可一键装</span><span class="pill">高价值 ★4+</span></div>` +
-    D.ai.map(a=>`<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a></div>
+// ===== AI 热点（实时读 data/trends.js，本地 agent 每天写入）=====
+let aiFilter = "全部";
+function aiData(){ return (window.TRENDS_DATA && window.TRENDS_DATA.items) ? window.TRENDS_DATA : {updatedAt:"（未生成）", items:D.ai}; }
+function renderAI(){ setTimeout(drawAI,0); return `<div class="bar" id="aiBar"></div><div id="aiList"></div>`; }
+window.pickAI = f => { aiFilter=f; drawAI(); };
+function drawAI(){
+  const d=aiData(), all=d.items;
+  const filters=["全部","可一键装","高价值 ★4+"];
+  $("aiBar").innerHTML = filters.map(f=>`<span class="pill ${f===aiFilter?'on':''}" onclick="pickAI('${f}')">${f}${f==='全部'?`<span class="c">${all.length}</span>`:''}</span>`).join("")
+    + `<span class="note" style="margin-left:8px">更新 ${d.updatedAt}</span>`;
+  let list=all;
+  if(aiFilter==="可一键装") list=all.filter(a=>a.difficulty==="一键装");
+  else if(aiFilter==="高价值 ★4+") list=all.filter(a=>a.value>=4);
+  $("aiList").innerHTML = list.map(a=>{
+    const got=LS.skills.some(s=>s.name===a.name);
+    return `<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a>${a.stars?` <span class="note">★${a.stars}</span>`:''}</div>
       <div class="line"><b>需求</b>：${a.demand}</div><div class="line"><b>供应</b>：${a.supply}</div>
-      <div class="foot"><span class="stars">${"★".repeat(a.value)}${"☆".repeat(5-a.value)}</span><span class="diff">${a.difficulty}</span><code>${a.install}</code></div></div>`).join("");
+      <div class="foot"><span class="stars">${"★".repeat(a.value)}${"☆".repeat(5-a.value)}</span><span class="diff">${a.difficulty}</span><code>${a.install}</code>
+      <button class="wbtn ${got?'ghost':''}" style="margin-left:auto;padding:5px 14px" onclick='adoptSkill(${JSON.stringify(a).replace(/'/g,"&#39;")})'>${got?'已采用':'采用为技能 ★'}</button></div></div>`;
+  }).join("") || '<div class="note">该筛选下暂无项目</div>';
 }
+window.adoptSkill = a => {
+  if(LS.skills.some(s=>s.name===a.name)){ toast("已在 Skills 管理中"); return; }
+  LS.skills.push({name:a.name, url:a.url, demand:a.demand, difficulty:a.difficulty, install:a.install, status:"待学"});
+  save(); drawAI(); buildNav(); toast("已采用到 Skills 管理 ★");
+};
+
+// ===== Skills 管理（采用的项目 → 学习/落地清单）=====
+function renderSkills(){
+  if(!LS.skills.length) return `<div class="placeholder"><div class="pt">Skills 管理 · 空</div><div class="pd">去 <b>AI 热点追踪</b>，看中的项目点“采用为技能 ★”，就会进到这里做学习/落地追踪。</div></div>`;
+  return `<div class="panel"><h3>已采用技能 · ${LS.skills.length}</h3>
+    <table><tr><th>项目</th><th>解决什么</th><th>难度</th><th>安装</th><th>状态</th><th></th></tr>
+    ${LS.skills.map((s,i)=>`<tr>
+      <td><a href="${s.url}" target="_blank" style="color:var(--green-d);text-decoration:none">${s.name}</a></td>
+      <td class="note">${s.demand}</td><td><span class="diff">${s.difficulty}</span></td>
+      <td><code>${s.install}</code></td>
+      <td><span class="badge2 ${s.status==='已落地'?'done':'pending'}">${s.status}</span></td>
+      <td><button class="act" onclick="cycleSkill(${i})" title="切换状态">↻</button> <button class="act del" onclick="dropSkill(${i})" title="移除">✗</button></td></tr>`).join("")}</table></div>`;
+}
+window.cycleSkill = i => { const o=["待学","学习中","已落地"]; const s=LS.skills[i]; s.status=o[(o.indexOf(s.status)+1)%o.length]; save(); go("skills"); };
+window.dropSkill = i => { LS.skills.splice(i,1); save(); go("skills"); buildNav(); };
 
 // ===== 选题库（✓保留 / ✗删除 / →送入工作流）=====
 let topicCat = "全部";
