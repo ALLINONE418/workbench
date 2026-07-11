@@ -1,5 +1,5 @@
 window.MISTAKES_DATA = {
-  "updatedAt": "2026-07-11 15:45",
+  "updatedAt": "2026-07-11 15:52",
   "items": [
     {
       "title": "熊旗内做多——把 Bear Flag 当反转底部",
@@ -10,17 +10,12 @@ window.MISTAKES_DATA = {
         "趋势延续",
         "IM2606"
       ],
-      "principles": [
-        "ttr-barbwire",
-        "climactic-reversal",
-        "mtr-major-trend-reversal",
-        "two-reasons-rule"
-      ],
       "symbol": "IM2606 中证1000期货 · 5分钟",
-      "session": "2026-06-08 约 10:10–13:10",
+      "images": [
+        "data/mistakes-img/Pasted_image_20260608213128.png"
+      ],
       "root": "在整理区内做多，判断依据是\"价格下跌过多、企稳反弹\"。",
-      "summary": "",
-      "checklist": []
+      "fix": "整理区是空头趋势中的 Bear Flag（延续结构）。正确操作是不在框内做任何方向，等待框的下边界被一根强空头K线突破收盘，做空入场。止损放在框上沿上方，目标为框高度的等长移动（约 127 点向下投影）。实际价格随后跌至 7962，空间充足。 ---"
     },
     {
       "title": "TTR/Barbwire 区间中部反复入场",
@@ -32,21 +27,12 @@ window.MISTAKES_DATA = {
         "区间中部",
         "IM2606"
       ],
-      "principles": [
-        "ttr-barbwire",
-        "traders-equation",
-        "spectrum-of-price-action"
-      ],
       "symbol": "IM2606 中证1000期货 · 5分钟",
-      "session": "2026-06-04 约 11:25–14:45",
+      "images": [
+        "data/mistakes-img/Pasted_image_20260604154934.png"
+      ],
       "root": "未识别 TTR/Barbwire 市场状态，在无趋势、无方向的区间内使用顺势逻辑入场。手续费+滑点直接吃掉理论利润空间，且区间中部无任何结构依据。",
-      "summary": "",
-      "checklist": [
-        "ADX 是否高于下方虚线（≈25）？低于则不做任何顺势入场",
-        "最近5根K线振幅是否超过50点？低于则不做，利润空间不足",
-        "入场位置是否在区间明确边界（顶部或底部）？区间中部不做",
-        "最近5根K线是否存在大量重叠？重叠超过50%则判定为 Barbwire"
-      ]
+      "fix": "ADX 是否高于下方虚线（≈25）？低于则不做任何顺势入场；最近5根K线振幅是否超过50点？低于则不做，利润空间不足；入场位置是否在区间明确边界（顶部或底部）？区间中部不做；最近5根K线是否存在大量重叠？重叠超过50%则判定为 Barbwire"
     },
     {
       "title": "买入高潮后在 EMA 下方做 H2 多头",
@@ -58,24 +44,12 @@ window.MISTAKES_DATA = {
         "空头脉冲",
         "逆势"
       ],
-      "principles": [
-        "h2-l2-bar-counting",
-        "climactic-reversal",
-        "always-in",
-        "two-reasons-rule"
-      ],
       "symbol": "IH2606 上证50期货 · 5分钟",
-      "session": "2026-05-21 上午盘",
+      "images": [
+        "data/mistakes-img/2026-05-21-ih2606-h2-trap.png"
+      ],
       "root": "你做的不是\"牛市趋势中的H2回调入场\"，而是\"高潮反转后的反弹陷阱",
-      "summary": "H2 多头只在\"牛市趋势 + EMA 支撑 + 回调动能衰减\"三者同时成立时才可靠。任何一项被否定，胜率就在下降；被全部否定时，H2 计数形态本身反而成了做空的信号。",
-      "checklist": [
-        "价格在 EMA 上方，且 EMA 向上倾斜？",
-        "前方是正常趋势，而非买入高潮？",
-        "DMI：PDI > MDI，ADX 未显示反向趋势信号？",
-        "MACD 直方图在收缩（而非持续扩大负值）？",
-        "H2 前少于 4 根连续大阴K趋势棒？",
-        "有至少两个独立理由支持入场？"
-      ]
+      "fix": "H2 多头只在\"牛市趋势 + EMA 支撑 + 回调动能衰减\"三者同时成立时才可靠。任何一项被否定，胜率就在下降；被全部否定时，H2 计数形态本身反而成了做空的信号。"
     }
   ]
 };

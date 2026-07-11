@@ -509,11 +509,10 @@ function renderMistakes(){
   return `<div class="bar"><span class="note">更新 ${d.updatedAt} · 共 ${d.items.length} 条 · 来自 Obsidian mistakes</span></div>` +
     d.items.map(m=>`<div class="panel">
       <h3>${m.title} <span class="note">${m.date}${m.symbol?" · "+m.symbol:""}</span></h3>
-      ${(m.keywords||[]).map(k=>`<span class="diff" style="margin:0 6px 6px 0;display:inline-block">${k}</span>`).join("")}
-      ${m.root?`<div class="summary">根源：${m.root}</div>`:""}
-      ${m.summary?`<div class="note" style="margin:8px 0 0">一句话：${m.summary}</div>`:""}
-      ${(m.checklist&&m.checklist.length)?`<div class="note" style="margin:14px 0 6px;font-weight:600;color:var(--text)">修正清单</div>`+m.checklist.map(c=>`<div class="row"><span style="margin-right:8px">☐</span><span style="flex:1">${c}</span></div>`).join(""):""}
-      ${(m.principles&&m.principles.length)?`<div class="note" style="margin-top:12px">违反原则：${m.principles.join(" · ")}</div>`:""}
+      ${(m.keywords||[]).map(k=>`<span class="diff" style="margin:0 6px 8px 0;display:inline-block">${k}</span>`).join("")}
+      ${(m.images||[]).map(src=>`<img src="${src}" alt="" loading="lazy" style="width:100%;border:1px solid var(--border);border-radius:8px;margin:10px 0;display:block">`).join("")}
+      ${m.root?`<div class="note" style="font-weight:600;color:var(--text);margin:12px 0 4px">错误根源</div><div style="line-height:1.75">${m.root}</div>`:""}
+      ${m.fix?`<div class="note" style="font-weight:600;color:var(--text);margin:16px 0 4px">如何修正</div><div class="summary" style="border-left-color:var(--green);margin-top:0">${m.fix}</div>`:""}
     </div>`).join("");
 }
 
