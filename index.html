@@ -224,15 +224,14 @@ const NAV = [
   {id:"mistakes",num:3, label:"错误合集", badge:()=>(window.MISTAKES_DATA&&window.MISTAKES_DATA.items?window.MISTAKES_DATA.items.length:0), render:renderMistakes},
   {group:"学习成长"},
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
-  {id:"skills",  num:5, label:"Skills 管理", badge:()=>LS.skills.length, render:renderSkills},
-  {id:"reading", num:6, label:"微信读书", badge:()=>(window.READING_DATA?window.READING_DATA.stats.shelf:0), render:renderReading},
-  {id:"priceaction", num:7, label:"价格行为", badge:0, gray:true, render:renderTodo, desc:"Al Brooks 价格行为学的概念库/笔记：H2·L2、Spike&Channel、MTR、TTR/Barbwire 等，与错误合集、每日复盘联动。", src:"数据源：Obsidian wiki/concepts"},
+  {id:"reading", num:5, label:"微信读书", badge:()=>(window.READING_DATA?window.READING_DATA.stats.shelf:0), render:renderReading},
+  {id:"priceaction", num:6, label:"价格行为", badge:0, gray:true, render:renderTodo, desc:"Al Brooks 价格行为学的概念库/笔记：H2·L2、Spike&Channel、MTR、TTR/Barbwire 等，与错误合集、每日复盘联动。", src:"数据源：Obsidian wiki/concepts"},
   {group:"内容运营"},
-  {id:"topics",  num:8, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
-  {id:"video",   num:9, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
-  {id:"publish", num:10, label:"发布记录", badge:"分析", render:renderPublish},
+  {id:"topics",  num:7, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
+  {id:"video",   num:8, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
+  {id:"publish", num:9, label:"发布记录", badge:"分析", render:renderPublish},
   {group:"资讯聚合 · All in One"},
-  {id:"feedVideo",num:11,label:"最新视频", badge:"周", render:renderFeedVideo},
+  {id:"feedVideo",num:10,label:"最新视频", badge:"周", render:renderFeedVideo},
 ];
 
 $("stUpdated").textContent = D.updatedAt;
@@ -368,34 +367,13 @@ function drawAI(){
   let list=all;
   if(aiFilter==="可一键装") list=all.filter(a=>a.difficulty==="一键装");
   else if(aiFilter==="高价值 ★4+") list=all.filter(a=>a.value>=4);
-  $("aiList").innerHTML = list.map(a=>{
-    const got=LS.skills.some(s=>s.name===a.name);
-    return `<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a>${a.stars?` <span class="note">★${a.stars}</span>`:''}</div>
-      <div class="line"><b>需求</b>：${a.demand}</div><div class="line"><b>供应</b>：${a.supply}</div>
-      <div class="foot"><span class="stars">${"★".repeat(a.value)}${"☆".repeat(5-a.value)}</span><span class="diff">${a.difficulty}</span><code>${a.install}</code>
-      <button class="wbtn ${got?'ghost':''}" style="margin-left:auto;padding:5px 14px" onclick='adoptSkill(${JSON.stringify(a).replace(/'/g,"&#39;")})'>${got?'已采用':'采用为技能 ★'}</button></div></div>`;
-  }).join("") || '<div class="note">该筛选下暂无项目</div>';
+  $("aiList").innerHTML = list.map(a=>
+    `<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a>${a.stars?` <span class="note">★${a.stars}</span>`:''}</div>
+      <div class="line"><b>用途</b>：${a.use||a.demand}</div>
+      <div class="line"><b>技术</b>：${a.supply}</div>
+      <div class="foot"><span class="stars">${"★".repeat(a.value)}${"☆".repeat(5-a.value)}</span><span class="diff">${a.difficulty}</span><code>${a.install}</code></div></div>`
+  ).join("") || '<div class="note">该筛选下暂无项目</div>';
 }
-window.adoptSkill = a => {
-  if(LS.skills.some(s=>s.name===a.name)){ toast("已在 Skills 管理中"); return; }
-  LS.skills.push({name:a.name, url:a.url, demand:a.demand, difficulty:a.difficulty, install:a.install, status:"待学"});
-  save(); drawAI(); buildNav(); toast("已采用到 Skills 管理 ★");
-};
-
-// ===== Skills 管理（采用的项目 → 学习/落地清单）=====
-function renderSkills(){
-  if(!LS.skills.length) return `<div class="placeholder"><div class="pt">Skills 管理 · 空</div><div class="pd">去 <b>AI 热点追踪</b>，看中的项目点“采用为技能 ★”，就会进到这里做学习/落地追踪。</div></div>`;
-  return `<div class="panel"><h3>已采用技能 · ${LS.skills.length}</h3>
-    <table><tr><th>项目</th><th>解决什么</th><th>难度</th><th>安装</th><th>状态</th><th></th></tr>
-    ${LS.skills.map((s,i)=>`<tr>
-      <td><a href="${s.url}" target="_blank" style="color:var(--green-d);text-decoration:none">${s.name}</a></td>
-      <td class="note">${s.demand}</td><td><span class="diff">${s.difficulty}</span></td>
-      <td><code>${s.install}</code></td>
-      <td><span class="badge2 ${s.status==='已落地'?'done':'pending'}">${s.status}</span></td>
-      <td><button class="act" onclick="cycleSkill(${i})" title="切换状态">↻</button> <button class="act del" onclick="dropSkill(${i})" title="移除">✗</button></td></tr>`).join("")}</table></div>`;
-}
-window.cycleSkill = i => { const o=["待学","学习中","已落地"]; const s=LS.skills[i]; s.status=o[(o.indexOf(s.status)+1)%o.length]; save(); go("skills"); };
-window.dropSkill = i => { LS.skills.splice(i,1); save(); go("skills"); buildNav(); };
 
 // ===== 选题库（✓保留 / ✗删除 / →送入工作流）=====
 let topicCat = "全部";
