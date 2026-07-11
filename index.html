@@ -98,6 +98,16 @@
   .wbtn.ghost:hover{background:var(--bg);color:var(--red);border-color:var(--red)}
   .stages{display:flex;gap:8px;flex-wrap:wrap}
 
+  /* 最新视频 · 缩略图网格 */
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .vthumb{display:block;text-decoration:none;color:var(--text)}
+  .vthumb .imgwrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--border)}
+  .vthumb .imgwrap img{width:100%;height:100%;object-fit:cover;display:block;transition:.2s}
+  .vthumb:hover .imgwrap img{transform:scale(1.04)}
+  .vthumb .dur{position:absolute;right:5px;bottom:5px;background:rgba(20,28,16,.82);color:#fff;font-size:11px;padding:1px 5px;border-radius:4px;line-height:1.4}
+  .vthumb .vt{font-size:12.5px;line-height:1.4;margin-top:6px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .vthumb .vm{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+
   .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
   .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
   .placeholder .pd{color:var(--muted);font-size:14px;line-height:1.75}
@@ -158,6 +168,7 @@
 <script src="data.js"></script>
 <script src="data/trends.js"></script>
 <script src="data/monthly.js"></script>
+<script src="data/mistakes.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const D = window.WORKBENCH_DATA;
@@ -186,7 +197,7 @@ const NAV = [
   {group:"交易复盘"},
   {id:"review",  num:1, label:"每日复盘", badge:"今日", render:renderReview},
   {id:"monthly", num:2, label:"月度复盘", badge:"月度", render:renderMonthly},
-  {id:"mistakes",num:3, label:"错误合集", badge:0, gray:true, render:renderTodo, desc:"重大交易错误归档。从 Obsidian 的 mistake 文件夹导入，未来新错误持续追加，可按类型/复发频次统计，与每日复盘的行为诊断联动。", src:"数据源：Obsidian / mistake"},
+  {id:"mistakes",num:3, label:"错误合集", badge:()=>(window.MISTAKES_DATA&&window.MISTAKES_DATA.items?window.MISTAKES_DATA.items.length:0), render:renderMistakes},
   {group:"学习成长"},
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
   {id:"skills",  num:5, label:"Skills 管理", badge:()=>LS.skills.length, render:renderSkills},
@@ -469,10 +480,13 @@ async function loadVideos(){
     let list=vids.filter(v=>new Date(v.published_at).getTime()>=cut);
     let note=`最新一周 · 共 ${list.length} 条`;
     if(list.length<6){ list=vids.slice(0,12); note=`近一周更新较少，展示最新 ${list.length} 条`; }
-    fillWhen("fvBody", `<div class="panel"><h3>视频 · ${note}</h3><table><tr><th>标题</th><th>频道</th><th>发布</th><th>时长</th><th>播放</th><th>点赞</th></tr>
-      ${list.map(v=>`<tr><td><a href="${v.url}" target="_blank" style="color:var(--green-d);text-decoration:none">${v.title}</a></td>
-      <td class="note">${v.channel}</td><td class="note">${ymd(v.published_at)}</td><td class="note">${mmss(v.duration_seconds)}</td><td>${wan(v.view_count)}</td><td>${wan(v.like_count)}</td></tr>`).join("")}</table>
-      <div class="note" style="margin-top:10px">实时来自 All in One / videos.json，19 个频道聚合。</div></div>`);
+    fillWhen("fvBody", `<div class="panel"><h3>视频 · ${note}</h3>
+      <div class="vgrid">${list.map(v=>`<a class="vthumb" href="${v.url}" target="_blank" title="${(v.title||'').replace(/"/g,'&quot;')}">
+        <div class="imgwrap"><img loading="lazy" src="${v.thumbnail||('https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg')}" alt="" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${v.id}/mqdefault.jpg'">${v.duration_seconds?`<span class="dur">${mmss(v.duration_seconds)}</span>`:''}</div>
+        <div class="vt">${v.title}</div>
+        <div class="vm"><span>${v.channel}</span><span>▶ ${wan(v.view_count)}</span></div>
+      </a>`).join("")}</div>
+      <div class="note" style="margin-top:12px">实时来自 All in One / videos.json，19 个频道聚合。</div></div>`);
   }catch(e){ fillWhen("fvBody", `<div class="placeholder"><div class="pt">加载失败</div><div class="pd">${e}。请通过 http://localhost:5178 或已部署页面访问（本地双击 file:// 无法跨域）。</div></div>`); }
 }
 
@@ -485,6 +499,22 @@ function renderMail(){
     <div class="note" style="margin-top:8px">只抓取以上发件人的邮件，其余忽略。</div></div>
   <div class="panel"><h3>重要邮件</h3><table><tr><th>发件人</th><th>主题</th><th>账户</th><th>时间</th></tr>
     ${m.items.map(i=>`<tr><td><b>${i.from}</b></td><td>${i.subject}</td><td>${i.account}</td><td class="note">${i.time}</td></tr>`).join("")}</table></div>`;
+}
+
+// ===== 错误合集（读 data/mistakes.js，说“错误合集”由本地 agent 从 Obsidian 导入）=====
+function renderMistakes(){
+  const d = window.MISTAKES_DATA;
+  if(!d || !d.items || !d.items.length)
+    return `<div class="placeholder"><div class="pt">错误合集 · 空</div><div class="pd">从 Obsidian 的 mistakes 文件夹导入。同步好后，在任意 Claude Code 对话说“错误合集”即自动更新。</div></div>`;
+  return `<div class="bar"><span class="note">更新 ${d.updatedAt} · 共 ${d.items.length} 条 · 来自 Obsidian mistakes</span></div>` +
+    d.items.map(m=>`<div class="panel">
+      <h3>${m.title} <span class="note">${m.date}${m.symbol?" · "+m.symbol:""}</span></h3>
+      ${(m.keywords||[]).map(k=>`<span class="diff" style="margin:0 6px 6px 0;display:inline-block">${k}</span>`).join("")}
+      ${m.root?`<div class="summary">根源：${m.root}</div>`:""}
+      ${m.summary?`<div class="note" style="margin:8px 0 0">一句话：${m.summary}</div>`:""}
+      ${(m.checklist&&m.checklist.length)?`<div class="note" style="margin:14px 0 6px;font-weight:600;color:var(--text)">修正清单</div>`+m.checklist.map(c=>`<div class="row"><span style="margin-right:8px">☐</span><span style="flex:1">${c}</span></div>`).join(""):""}
+      ${(m.principles&&m.principles.length)?`<div class="note" style="margin-top:12px">违反原则：${m.principles.join(" · ")}</div>`:""}
+    </div>`).join("");
 }
 
 // ===== 占位模块 =====
