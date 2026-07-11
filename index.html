@@ -207,8 +207,6 @@ const NAV = [
   {id:"publish", num:9, label:"发布记录", badge:"分析", render:renderPublish},
   {group:"资讯聚合 · All in One"},
   {id:"feedVideo",num:10,label:"最新视频", badge:"周", render:renderFeedVideo},
-  {group:"邮箱合集"},
-  {id:"mail",    num:11,label:"重要邮件", badge:()=>D.mail.items.length, render:renderMail},
 ];
 
 $("stUpdated").textContent = D.updatedAt;
@@ -487,17 +485,6 @@ async function loadVideos(){
       </a>`).join("")}</div>
       <div class="note" style="margin-top:12px">实时来自 All in One / videos.json，19 个频道聚合。</div></div>`);
   }catch(e){ fillWhen("fvBody", `<div class="placeholder"><div class="pt">加载失败</div><div class="pd">${e}。请通过 http://localhost:5178 或已部署页面访问（本地双击 file:// 无法跨域）。</div></div>`); }
-}
-
-// ===== 邮箱合集 =====
-function renderMail(){
-  const m=D.mail;
-  return `<div class="bar">${m.accounts.map(a=>`<span class="pill on">${a}</span>`).join("")}</div>
-  <div class="panel"><h3>重要关注对象（Watchlist）</h3>
-    ${m.watchlist.map(w=>`<span class="diff" style="margin:0 6px 6px 0;display:inline-block">${w}</span>`).join("")}
-    <div class="note" style="margin-top:8px">只抓取以上发件人的邮件，其余忽略。</div></div>
-  <div class="panel"><h3>重要邮件</h3><table><tr><th>发件人</th><th>主题</th><th>账户</th><th>时间</th></tr>
-    ${m.items.map(i=>`<tr><td><b>${i.from}</b></td><td>${i.subject}</td><td>${i.account}</td><td class="note">${i.time}</td></tr>`).join("")}</table></div>`;
 }
 
 // ===== 错误合集（读 data/mistakes.js，说“错误合集”由本地 agent 从 Obsidian 导入）=====
