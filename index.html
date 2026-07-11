@@ -200,13 +200,14 @@ const NAV = [
   {group:"学习成长"},
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
   {id:"skills",  num:5, label:"Skills 管理", badge:()=>LS.skills.length, render:renderSkills},
-  {id:"reading", num:6, label:"读书笔记", badge:0, gray:true, render:renderTodo, desc:"从微信读书同步：在读 / 想读 / 已读书单，并汇总过往读书笔记，可作为选题来源。", src:"数据源：微信读书"},
+  {id:"reading", num:6, label:"微信读书", badge:0, gray:true, render:renderTodo, desc:"从微信读书同步：在读 / 想读 / 已读书单，并汇总过往划线与笔记，可作为选题来源。", src:"数据源：微信读书"},
+  {id:"priceaction", num:7, label:"价格行为", badge:0, gray:true, render:renderTodo, desc:"Al Brooks 价格行为学的概念库/笔记：H2·L2、Spike&Channel、MTR、TTR/Barbwire 等，与错误合集、每日复盘联动。", src:"数据源：Obsidian wiki/concepts"},
   {group:"内容运营"},
-  {id:"topics",  num:7, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
-  {id:"video",   num:8, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
-  {id:"publish", num:9, label:"发布记录", badge:"分析", render:renderPublish},
+  {id:"topics",  num:8, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
+  {id:"video",   num:9, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
+  {id:"publish", num:10, label:"发布记录", badge:"分析", render:renderPublish},
   {group:"资讯聚合 · All in One"},
-  {id:"feedVideo",num:10,label:"最新视频", badge:"周", render:renderFeedVideo},
+  {id:"feedVideo",num:11,label:"最新视频", badge:"周", render:renderFeedVideo},
 ];
 
 $("stUpdated").textContent = D.updatedAt;
