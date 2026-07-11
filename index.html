@@ -165,10 +165,9 @@
 <div id="toast"></div>
 <div id="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
 
-<script src="data.js"></script>
-<script src="data/trends.js"></script>
-<script src="data/monthly.js"></script>
-<script src="data/mistakes.js"></script>
+<script>
+["data.js","data/trends.js","data/monthly.js","data/mistakes.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const D = window.WORKBENCH_DATA;
