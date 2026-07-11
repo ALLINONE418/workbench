@@ -108,6 +108,24 @@
   .vthumb .vt{font-size:12.5px;line-height:1.4;margin-top:6px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .vthumb .vm{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
 
+  /* 微信读书 · 封面墙 */
+  .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:16px 14px}
+  .bcard{color:var(--text)}
+  .bcard.has{cursor:pointer}
+  .bcover{position:relative;width:100%;aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:var(--green-l);border:1px solid var(--border);box-shadow:0 1px 5px rgba(60,80,45,.12);transition:.18s}
+  .bcard.has:hover .bcover{transform:translateY(-3px);box-shadow:0 5px 14px rgba(60,80,45,.2)}
+  .bcover .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-size:12px;font-weight:600;color:var(--green-d);line-height:1.4}
+  .bcover img{position:relative;width:100%;height:100%;object-fit:cover;display:block}
+  .bcover .nbadge{position:absolute;left:0;bottom:0;background:rgba(78,122,60,.94);color:#fff;font-size:11px;padding:2px 7px;border-top-right-radius:6px;font-weight:500}
+  .bcover .fin{position:absolute;right:5px;top:5px;background:var(--green-d);color:#fff;width:19px;height:19px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center}
+  .btitle{font-size:12.5px;font-weight:500;margin-top:7px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .bauthor{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mbox{max-height:60vh;overflow:auto;margin-top:6px;padding-right:4px}
+  .mch{font-size:13px;font-weight:600;color:var(--green-d);margin:14px 0 6px;position:sticky;top:0;background:var(--card);padding:3px 0}
+  .mch:first-child{margin-top:2px}
+  .mtext{font-size:13.5px;line-height:1.7;padding:8px 11px;margin-bottom:6px;background:var(--bg);border-left:3px solid var(--green);border-radius:5px;white-space:pre-wrap;word-break:break-word}
+  .mtext.think{border-left-color:var(--amber)}
+
   .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
   .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
   .placeholder .pd{color:var(--muted);font-size:14px;line-height:1.75}
@@ -166,7 +184,7 @@
 <div id="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
 
 <script>
-["data.js","data/trends.js","data/monthly.js","data/mistakes.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
+["data.js","data/trends.js","data/monthly.js","data/mistakes.js","data/reading.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -200,7 +218,7 @@ const NAV = [
   {group:"学习成长"},
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
   {id:"skills",  num:5, label:"Skills 管理", badge:()=>LS.skills.length, render:renderSkills},
-  {id:"reading", num:6, label:"微信读书", badge:0, gray:true, render:renderTodo, desc:"从微信读书同步：在读 / 想读 / 已读书单，并汇总过往划线与笔记，可作为选题来源。", src:"数据源：微信读书"},
+  {id:"reading", num:6, label:"微信读书", badge:()=>(window.READING_DATA?window.READING_DATA.stats.shelf:0), render:renderReading},
   {id:"priceaction", num:7, label:"价格行为", badge:0, gray:true, render:renderTodo, desc:"Al Brooks 价格行为学的概念库/笔记：H2·L2、Spike&Channel、MTR、TTR/Barbwire 等，与错误合集、每日复盘联动。", src:"数据源：Obsidian wiki/concepts"},
   {group:"内容运营"},
   {id:"topics",  num:8, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
@@ -502,6 +520,42 @@ function renderMistakes(){
       ${m.fix?`<div class="note" style="font-weight:600;color:var(--text);margin:16px 0 4px">如何修正</div><div class="summary" style="border-left-color:var(--green);margin-top:0">${m.fix}</div>`:""}
     </div>`).join("");
 }
+
+// ===== 微信读书（读 data/reading.js，由 weread skill 抓取生成）=====
+let readFilter="全部";
+function readData(){ return window.READING_DATA || null; }
+function renderReading(){ setTimeout(drawReading,0); return `<div class="bar" id="rdBar"></div><div id="rdList"></div>`; }
+window.pickRead = f => { readFilter=f; drawReading(); };
+function bookEsc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function drawReading(){
+  const R=readData();
+  if(!R){ $("rdList").innerHTML=`<div class="placeholder"><div class="pt">微信读书 · 暂无数据</div><div class="pd">在任意 Claude Code 对话说“同步读书”，即用微信读书 Skill 抓取书架与划线并生成。</div></div>`; return; }
+  const all=R.books, s=R.stats;
+  const filters=["全部","有笔记","已读完"];
+  $("rdBar").innerHTML = filters.map(f=>`<span class="pill ${f===readFilter?'on':''}" onclick="pickRead('${f}')">${f}${f==='全部'?`<span class="c">${all.length}</span>`:''}</span>`).join("")
+    + `<span class="note" style="margin-left:8px">书架 ${s.shelf} · 有笔记 ${s.noteBooks} 本 · 划线 ${s.marks} 条 · 更新 ${R.updatedAt}</span>`;
+  let list=all;
+  if(readFilter==="有笔记") list=all.filter(b=>b.marks&&b.marks.length);
+  else if(readFilter==="已读完") list=all.filter(b=>b.finish===1);
+  $("rdList").innerHTML = `<div class="panel"><div class="bgrid">${list.map(b=>{
+    const has=b.marks&&b.marks.length;
+    return `<div class="bcard ${has?'has':''}" ${has?`onclick="openBook('${b.id}')"`:''}>
+      <div class="bcover"><span class="ph">${bookEsc(b.title)}</span>${b.cover?`<img loading="lazy" src="${b.cover}" alt="" onerror="this.style.display='none'">`:''}${has?`<span class="nbadge">${b.marks.length} 划线</span>`:''}${b.finish?'<span class="fin">✓</span>':''}</div>
+      <div class="btitle">${bookEsc(b.title)}</div><div class="bauthor">${bookEsc(b.author)}</div></div>`;
+  }).join("")||'<div class="note">该筛选下暂无书籍</div>'}</div></div>`;
+}
+window.openBook = id => {
+  const b=readData().books.find(x=>x.id===id); if(!b) return;
+  const marks=b.marks||[]; let html="", lastCh=null;
+  marks.forEach(m=>{ if(m.ch!==lastCh){ html+=`<div class="mch">${bookEsc(m.ch)||'（未分章）'}</div>`; lastCh=m.ch; }
+    html+=`<div class="mtext">${bookEsc(m.t)}</div>`; });
+  let th="";
+  (b.thoughts||[]).forEach(t=>{ th+=`<div class="mtext think">${t.a?`<div class="note" style="margin-bottom:5px">「${bookEsc(t.a)}」</div>`:''}💭 ${bookEsc(t.c)}</div>`; });
+  openModal(`<h3>${bookEsc(b.title)}</h3>
+    <div class="note" style="margin-bottom:8px">${bookEsc(b.author)} · ${marks.length} 条划线${b.thoughts&&b.thoughts.length?` · ${b.thoughts.length} 条想法`:''}${b.finish?' · 已读完':''}</div>
+    <div class="mbox">${html||'<div class="note">这本书暂无可导出的划线内容</div>'}${th?`<div class="mch">我的想法</div>`+th:''}</div>
+    <div style="text-align:right;margin-top:14px"><button class="wbtn" onclick="closeModal()">关闭</button></div>`);
+};
 
 // ===== 占位模块 =====
 function renderTodo(item){
