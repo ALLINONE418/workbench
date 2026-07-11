@@ -125,6 +125,13 @@
   .mch:first-child{margin-top:2px}
   .mtext{font-size:13.5px;line-height:1.7;padding:8px 11px;margin-bottom:6px;background:var(--bg);border-left:3px solid var(--green);border-radius:5px;white-space:pre-wrap;word-break:break-word}
   .mtext.think{border-left-color:var(--amber)}
+  .nbook{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;padding:0 14px;background:var(--card)}
+  .nbook summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:14.5px;list-style:none;display:flex;align-items:baseline;flex-wrap:wrap}
+  .nbook summary::-webkit-details-marker{display:none}
+  .nbook summary::before{content:"▸";margin-right:9px;color:var(--muted);font-weight:400}
+  .nbook[open] summary::before{content:"▾"}
+  .nbook[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
+  .nbook .mtext:last-child{margin-bottom:12px}
 
   .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
   .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
@@ -522,8 +529,9 @@ function renderMistakes(){
 }
 
 // ===== 微信读书（读 data/reading.js，由 weread skill 抓取生成）=====
-let readFilter="全部";
+let readFilter="全部", noteCat="哲学";
 function readData(){ return window.READING_DATA || null; }
+function bigCat(c){ c=c||""; if(/哲学|宗教/.test(c)) return "哲学"; if(/历史/.test(c)) return "历史"; if(/经济|理财|财经/.test(c)) return "金融"; return "其他"; }
 function renderReading(){ setTimeout(drawReading,0); return `<div class="bar" id="rdBar"></div><div id="rdList"></div>`; }
 window.pickRead = f => { readFilter=f; drawReading(); };
 function bookEsc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -531,9 +539,10 @@ function drawReading(){
   const R=readData();
   if(!R){ $("rdList").innerHTML=`<div class="placeholder"><div class="pt">微信读书 · 暂无数据</div><div class="pd">在任意 Claude Code 对话说“同步读书”，即用微信读书 Skill 抓取书架与划线并生成。</div></div>`; return; }
   const all=R.books, s=R.stats;
-  const filters=["全部","有笔记","已读完"];
+  const filters=["全部","有笔记","已读完","笔记"];
   $("rdBar").innerHTML = filters.map(f=>`<span class="pill ${f===readFilter?'on':''}" onclick="pickRead('${f}')">${f}${f==='全部'?`<span class="c">${all.length}</span>`:''}</span>`).join("")
     + `<span class="note" style="margin-left:8px">书架 ${s.shelf} · 有笔记 ${s.noteBooks} 本 · 划线 ${s.marks} 条 · 更新 ${R.updatedAt}</span>`;
+  if(readFilter==="笔记"){ drawNotes(all); return; }
   let list=all;
   if(readFilter==="有笔记") list=all.filter(b=>b.marks&&b.marks.length);
   else if(readFilter==="已读完") list=all.filter(b=>b.finish===1);
@@ -556,6 +565,21 @@ window.openBook = id => {
     <div class="mbox">${html||'<div class="note">这本书暂无可导出的划线内容</div>'}${th?`<div class="mch">我的想法</div>`+th:''}</div>
     <div style="text-align:right;margin-top:14px"><button class="wbtn" onclick="closeModal()">关闭</button></div>`);
 };
+window.pickNoteCat = c => { noteCat=c; drawNotes(readData().books); };
+function drawNotes(all){
+  const cats=["哲学","历史","金融","其他"];
+  const noted=all.filter(b=>b.marks&&b.marks.length);
+  const g={}; cats.forEach(c=>g[c]=[]);
+  noted.forEach(b=>g[bigCat(b.cat)].push(b));
+  const sub=cats.map(c=>`<span class="pill ${c===noteCat?'on':''}" onclick="pickNoteCat('${c}')">${c}<span class="c">${g[c].length}</span></span>`).join("");
+  const books=g[noteCat]||[];
+  const totalMarks=books.reduce((n,b)=>n+b.marks.length,0);
+  const body=books.map(b=>`<details class="nbook"><summary>${bookEsc(b.title)}<span class="note"> · ${bookEsc(b.author)} · ${b.marks.length} 划线</span></summary>`
+    + b.marks.map(m=>`<div class="mtext">${bookEsc(m.t)}</div>`).join("")
+    + (b.thoughts||[]).map(t=>`<div class="mtext think">${t.a?`<div class="note" style="margin-bottom:5px">「${bookEsc(t.a)}」</div>`:''}💭 ${bookEsc(t.c)}</div>`).join("")
+    + `</details>`).join("") || '<div class="note">该分类下暂无笔记</div>';
+  $("rdList").innerHTML=`<div class="panel"><div class="bar" style="margin-bottom:14px">${sub}<span class="note" style="margin-left:8px">${noteCat} · ${books.length} 本 · ${totalMarks} 条划线</span></div>${body}</div>`;
+}
 
 // ===== 占位模块 =====
 function renderTodo(item){
