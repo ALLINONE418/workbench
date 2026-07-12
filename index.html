@@ -132,6 +132,7 @@
   .nbook[open] summary::before{content:"▾"}
   .nbook[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
   .nbook .mtext:last-child{margin-bottom:12px}
+  .pnote{margin-top:8px;padding:8px 11px;background:var(--green-l);border-radius:5px;font-size:13px;color:var(--green-d);line-height:1.6}
 
   .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
   .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
@@ -191,7 +192,7 @@
 <div id="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
 
 <script>
-["data.js","data/trends.js","data/monthly.js","data/mistakes.js","data/reading.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
+["data.js","data/trends.js","data/monthly.js","data/mistakes.js","data/reading.js","data/priceaction.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -225,7 +226,7 @@ const NAV = [
   {group:"学习成长"},
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
   {id:"reading", num:5, label:"微信读书", badge:()=>(window.READING_DATA?window.READING_DATA.stats.shelf:0), render:renderReading},
-  {id:"priceaction", num:6, label:"价格行为", badge:0, gray:true, render:renderTodo, desc:"Al Brooks 价格行为学的概念库/笔记：H2·L2、Spike&Channel、MTR、TTR/Barbwire 等，与错误合集、每日复盘联动。", src:"数据源：Obsidian wiki/concepts"},
+  {id:"priceaction", num:6, label:"价格行为", badge:()=>(window.PRICEACTION_DATA?window.PRICEACTION_DATA.stats.total:0), render:renderPriceaction},
   {group:"内容运营"},
   {id:"topics",  num:7, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
   {id:"video",   num:8, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
@@ -546,6 +547,17 @@ function drawNotes(all){
     + (b.thoughts||[]).map(t=>`<div class="mtext think">${t.a?`<div class="note" style="margin-bottom:5px">「${bookEsc(t.a)}」</div>`:''}💭 ${bookEsc(t.c)}</div>`).join("")
     + `</details>`).join("") || '<div class="note">该分类下暂无笔记</div>';
   $("rdList").innerHTML=`<div class="panel"><div class="bar" style="margin-bottom:14px">${sub}<span class="note" style="margin-left:8px">${noteCat} · ${books.length} 本 · ${totalMarks} 条划线</span></div>${body}</div>`;
+}
+
+// ===== 价格行为（读 data/priceaction.js，从 BPA 阅读器按同步码抓批注生成）=====
+function renderPriceaction(){
+  const P=window.PRICEACTION_DATA;
+  if(!P) return `<div class="placeholder"><div class="pt">价格行为 · 暂无数据</div><div class="pd">在任意 Claude Code 对话说“同步批注”，即从 BPA 阅读器同步你的高亮与笔记。</div></div>`;
+  const s=P.stats;
+  const body=P.chapters.map(c=>`<details class="nbook"><summary>${bookEsc(c.title)}<span class="note"> · ${c.items.length} 条</span></summary>`
+    + c.items.map(it=>`<div class="mtext" style="border-left-color:${it.color||'var(--green)'}">${bookEsc(it.text)}${it.note?`<div class="pnote">📝 ${bookEsc(it.note)}</div>`:''}</div>`).join("")
+    + `</details>`).join("") || '<div class="note">暂无批注</div>';
+  return `<div class="bar"><span class="note">共 ${s.total} 条批注 · ${s.chapters} 章 · 带笔记 ${s.withNote} · 更新 ${P.updatedAt}</span></div><div class="panel">${body}</div>`;
 }
 
 // ===== 占位模块 =====
