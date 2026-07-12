@@ -354,25 +354,17 @@ function drawMonthlyCharts(j){
   mk("mcWk",bar(j.byWeek.map(x=>"第"+x.w+"周"),j.byWeek.map(x=>x.net)));
 }
 
-// ===== AI 热点（实时读 data/trends.js，本地 agent 每天写入）=====
-let aiFilter = "全部";
+// ===== AI 热点（每周更新：说“AI热点”→ 助手抓取+翻译+推送）=====
 function aiData(){ return (window.TRENDS_DATA && window.TRENDS_DATA.items) ? window.TRENDS_DATA : {updatedAt:"（未生成）", items:D.ai}; }
 function renderAI(){ setTimeout(drawAI,0); return `<div class="bar" id="aiBar"></div><div id="aiList"></div>`; }
-window.pickAI = f => { aiFilter=f; drawAI(); };
 function drawAI(){
   const d=aiData(), all=d.items;
-  const filters=["全部","可一键装","高价值 ★4+"];
-  $("aiBar").innerHTML = filters.map(f=>`<span class="pill ${f===aiFilter?'on':''}" onclick="pickAI('${f}')">${f}${f==='全部'?`<span class="c">${all.length}</span>`:''}</span>`).join("")
-    + `<span class="note" style="margin-left:8px">更新 ${d.updatedAt}</span>`;
-  let list=all;
-  if(aiFilter==="可一键装") list=all.filter(a=>a.difficulty==="一键装");
-  else if(aiFilter==="高价值 ★4+") list=all.filter(a=>a.value>=4);
-  $("aiList").innerHTML = list.map(a=>
-    `<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a>${a.stars?` <span class="note">★${a.stars}</span>`:''}</div>
-      <div class="line"><b>用途</b>：${a.use||a.demand}</div>
-      <div class="line"><b>技术</b>：${a.supply}</div>
-      <div class="foot"><span class="stars">${"★".repeat(a.value)}${"☆".repeat(5-a.value)}</span><span class="diff">${a.difficulty}</span><code>${a.install}</code></div></div>`
-  ).join("") || '<div class="note">该筛选下暂无项目</div>';
+  $("aiBar").innerHTML = `<span class="pill on">全部<span class="c">${all.length}</span></span><span class="note" style="margin-left:8px">更新 ${d.updatedAt} · 每周刷新</span>`;
+  $("aiList").innerHTML = all.map(a=>
+    `<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a>${a.stars?` <span class="note">★${a.stars>=1000?(a.stars/1000).toFixed(1)+"k":a.stars}</span>`:''}</div>
+      <div class="line" style="color:var(--text);font-size:14px;line-height:1.6">${a.use||a.demand||""}</div>
+      ${(a.tags&&a.tags.length)?`<div class="foot">${a.tags.map(t=>`<span class="diff">${t}</span>`).join("")}</div>`:''}</div>`
+  ).join("") || '<div class="note">暂无，说“AI热点”即抓取更新</div>';
 }
 
 // ===== 选题库（✓保留 / ✗删除 / →送入工作流）=====
@@ -517,19 +509,17 @@ function drawReading(){
   const R=readData();
   if(!R){ $("rdList").innerHTML=`<div class="placeholder"><div class="pt">微信读书 · 暂无数据</div><div class="pd">在任意 Claude Code 对话说“同步读书”，即用微信读书 Skill 抓取书架与划线并生成。</div></div>`; return; }
   const all=R.books, s=R.stats;
-  const filters=["全部","有笔记","已读完","笔记"];
+  const filters=["全部","笔记"];
   $("rdBar").innerHTML = filters.map(f=>`<span class="pill ${f===readFilter?'on':''}" onclick="pickRead('${f}')">${f}${f==='全部'?`<span class="c">${all.length}</span>`:''}</span>`).join("")
     + `<span class="note" style="margin-left:8px">书架 ${s.shelf} · 有笔记 ${s.noteBooks} 本 · 划线 ${s.marks} 条 · 更新 ${R.updatedAt}</span>`;
   if(readFilter==="笔记"){ drawNotes(all); return; }
-  let list=all;
-  if(readFilter==="有笔记") list=all.filter(b=>b.marks&&b.marks.length);
-  else if(readFilter==="已读完") list=all.filter(b=>b.finish===1);
+  const list=all;
   $("rdList").innerHTML = `<div class="panel"><div class="bgrid">${list.map(b=>{
     const has=b.marks&&b.marks.length;
-    return `<div class="bcard ${has?'has':''}" ${has?`onclick="openBook('${b.id}')"`:''}>
+    return `<div class="bcard has" onclick="window.open('${b.link||''}','_blank','noopener')" title="${bookEsc(b.title)} · 打开微信读书继续阅读">
       <div class="bcover"><span class="ph">${bookEsc(b.title)}</span>${b.cover?`<img loading="lazy" src="${b.cover}" alt="" onerror="this.style.display='none'">`:''}${has?`<span class="nbadge">${b.marks.length} 划线</span>`:''}${b.finish?'<span class="fin">✓</span>':''}</div>
       <div class="btitle">${bookEsc(b.title)}</div><div class="bauthor">${bookEsc(b.author)}</div></div>`;
-  }).join("")||'<div class="note">该筛选下暂无书籍</div>'}</div></div>`;
+  }).join("")||'<div class="note">暂无书籍</div>'}</div></div>`;
 }
 window.openBook = id => {
   const b=readData().books.find(x=>x.id===id); if(!b) return;
