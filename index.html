@@ -543,11 +543,13 @@ function drawNotes(all){
   const sub=cats.map(c=>`<span class="pill ${c===noteCat?'on':''}" onclick="pickNoteCat('${c}')">${c}<span class="c">${g[c].length}</span></span>`).join("");
   const books=g[noteCat]||[];
   const totalMarks=books.reduce((n,b)=>n+b.marks.length,0);
-  const body=books.map(b=>`<details class="nbook"><summary>${bookEsc(b.title)}<span class="note"> · ${bookEsc(b.author)} · ${b.marks.length} 划线</span></summary>`
-    + b.marks.map(m=>`<div class="mtext">${bookEsc(m.t)}</div>`).join("")
-    + (b.thoughts||[]).map(t=>`<div class="mtext think">${t.a?`<div class="note" style="margin-bottom:5px">「${bookEsc(t.a)}」</div>`:''}💭 ${bookEsc(t.c)}</div>`).join("")
-    + `</details>`).join("") || '<div class="note">该分类下暂无笔记</div>';
-  $("rdList").innerHTML=`<div class="panel"><div class="bar" style="margin-bottom:14px">${sub}<span class="note" style="margin-left:8px">${noteCat} · ${books.length} 本 · ${totalMarks} 条划线</span></div>${body}</div>`;
+  let rows="";
+  books.forEach(b=>{
+    const src=`<div class="src">—— 《${bookEsc(b.title)}》· ${bookEsc(b.author)}</div>`;
+    b.marks.forEach(m=>{ rows+=`<div class="mtext">${bookEsc(m.t)}${src}</div>`; });
+    (b.thoughts||[]).forEach(t=>{ rows+=`<div class="mtext think">${t.a?`<div class="note" style="margin-bottom:5px">「${bookEsc(t.a)}」</div>`:''}💭 ${bookEsc(t.c)}${src}</div>`; });
+  });
+  $("rdList").innerHTML=`<div class="panel"><div class="bar" style="margin-bottom:14px">${sub}<span class="note" style="margin-left:8px">${noteCat} · ${books.length} 本 · ${totalMarks} 条划线</span></div>${rows||'<div class="note">该分类下暂无笔记</div>'}</div>`;
 }
 
 // ===== 价格行为（读 data/priceaction.js，从 BPA 阅读器按同步码抓批注生成）=====
