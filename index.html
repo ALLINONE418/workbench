@@ -568,7 +568,7 @@ function renderTodo(item){
 }
 
 // ===== 访问密码门 =====
-const PASS_HASH = "072ddf780dd1b2e20c6935861f1deef8ccebb323ea406335d60aa4bb13a98c1a"; // 默认密码 yoyo905，改密码把新密码告诉我重算即可
+const PASS_HASH = "7f9476cf0ad3d40aaeda23d8c6d5a3780143e22b68b41c716cc38e3b038075a3"; // 密码 903905
 async function sha(s){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
 async function tryUnlock(){
   const v=$("gpass").value;
