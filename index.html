@@ -362,8 +362,7 @@ function drawAI(){
   $("aiBar").innerHTML = `<span class="pill on">全部<span class="c">${all.length}</span></span><span class="note" style="margin-left:8px">更新 ${d.updatedAt} · 每周刷新</span>`;
   $("aiList").innerHTML = all.map(a=>
     `<div class="card"><div class="name"><a href="${a.url}" target="_blank">${a.name}</a>${a.stars?` <span class="note">★${a.stars>=1000?(a.stars/1000).toFixed(1)+"k":a.stars}</span>`:''}</div>
-      <div class="line" style="color:var(--text);font-size:14px;line-height:1.6">${a.use||a.demand||""}</div>
-      ${(a.tags&&a.tags.length)?`<div class="foot">${a.tags.map(t=>`<span class="diff">${t}</span>`).join("")}</div>`:''}</div>`
+      <div class="line" style="color:var(--text);font-size:14px;line-height:1.75;margin-top:6px">${a.use||a.demand||""}</div></div>`
   ).join("") || '<div class="note">暂无，说“AI热点”即抓取更新</div>';
 }
 
