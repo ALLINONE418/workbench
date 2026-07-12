@@ -133,6 +133,7 @@
   .nbook[open] summary{border-bottom:1px solid var(--border);margin-bottom:10px}
   .nbook .mtext:last-child{margin-bottom:12px}
   .pnote{margin-top:8px;padding:8px 11px;background:var(--green-l);border-radius:5px;font-size:13px;color:var(--green-d);line-height:1.6}
+  .src{font-size:12px;color:var(--muted);margin-top:7px}
 
   .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
   .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
@@ -554,10 +555,14 @@ function renderPriceaction(){
   const P=window.PRICEACTION_DATA;
   if(!P) return `<div class="placeholder"><div class="pt">价格行为 · 暂无数据</div><div class="pd">在任意 Claude Code 对话说“同步批注”，即从 BPA 阅读器同步你的高亮与笔记。</div></div>`;
   const s=P.stats;
-  const body=P.chapters.map(c=>`<details class="nbook"><summary>${bookEsc(c.title)}<span class="note"> · ${c.items.length} 条</span></summary>`
-    + c.items.map(it=>`<div class="mtext" style="border-left-color:${it.color||'var(--green)'}">${bookEsc(it.text)}${it.note?`<div class="pnote">📝 ${bookEsc(it.note)}</div>`:''}</div>`).join("")
-    + `</details>`).join("") || '<div class="note">暂无批注</div>';
-  return `<div class="bar"><span class="note">共 ${s.total} 条批注 · ${s.chapters} 章 · 带笔记 ${s.withNote} · 更新 ${P.updatedAt}</span></div><div class="panel">${body}</div>`;
+  let rows="";
+  P.chapters.forEach(c=>c.items.forEach(it=>{
+    rows += `<div class="mtext" style="border-left-color:${it.color||'var(--green)'}">${bookEsc(it.text)}`
+      + `<div class="src">—— 来自 ${bookEsc(c.title)}</div>`
+      + (it.note?`<div class="pnote">📝 ${bookEsc(it.note)}</div>`:'')
+      + `</div>`;
+  }));
+  return `<div class="bar"><span class="note">共 ${s.total} 条批注 · ${s.chapters} 章 · 带笔记 ${s.withNote} · 更新 ${P.updatedAt}</span></div><div class="panel">${rows||'<div class="note">暂无批注</div>'}</div>`;
 }
 
 // ===== 占位模块 =====
