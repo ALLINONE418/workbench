@@ -135,6 +135,18 @@
   .pnote{margin-top:8px;padding:8px 11px;background:var(--green-l);border-radius:5px;font-size:13px;color:var(--green-d);line-height:1.6}
   .src{font-size:12px;color:var(--muted);margin-top:7px}
 
+  /* 英语口语 · Yoyo English Library */
+  .elib-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .elib-topic{margin-bottom:18px}
+  .elib-topic:last-child{margin-bottom:0}
+  .elib-topic h3{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .elib-count{font-size:12px;color:var(--muted);font-weight:400}
+  .elib-entry{padding:11px 0;border-bottom:1px solid var(--border);font-size:14.5px;line-height:1.7}
+  .elib-entry:last-child{border-bottom:none}
+  .elib-stars{color:var(--amber);margin-right:8px;white-space:nowrap}
+  .elib-download{color:var(--green-d);text-decoration:none;background:var(--green-l);padding:6px 12px;border-radius:7px;font-size:13px}
+  .elib-download:hover{background:var(--green);color:#fff}
+
   .placeholder{padding:26px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
   .placeholder .pt{font-weight:600;font-size:16px;margin-bottom:8px}
   .placeholder .pd{color:var(--muted);font-size:14px;line-height:1.75}
@@ -193,7 +205,7 @@
 <div id="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
 
 <script>
-["data.js","data/trends.js","data/monthly.js","data/mistakes.js","data/reading.js","data/priceaction.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
+["data.js","data/trends.js","data/monthly.js","data/mistakes.js","data/reading.js","data/priceaction.js","data/english-library.js"].forEach(function(s){document.write('<script src="'+s+'?t='+Date.now()+'"><\/script>');});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -228,12 +240,13 @@ const NAV = [
   {id:"ai",      num:4, label:"AI 热点追踪", badge:()=>D.ai.length, render:renderAI},
   {id:"reading", num:5, label:"微信读书", badge:()=>(window.READING_DATA?window.READING_DATA.stats.shelf:0), render:renderReading},
   {id:"priceaction", num:6, label:"价格行为", badge:()=>(window.PRICEACTION_DATA?window.PRICEACTION_DATA.stats.total:0), render:renderPriceaction},
+  {id:"english", num:7, label:"英语口语", badge:()=>(window.ENGLISH_LIBRARY_DATA?window.ENGLISH_LIBRARY_DATA.total:0), render:renderEnglish},
   {group:"内容运营"},
-  {id:"topics",  num:7, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
-  {id:"video",   num:8, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
-  {id:"publish", num:9, label:"发布记录", badge:"分析", render:renderPublish},
+  {id:"topics",  num:8, label:"选题库", badge:()=>D.topics.filter(t=>!LS.del.includes(t.title)).length, render:renderTopics},
+  {id:"video",   num:9, label:"视频工作流", badge:()=>LS.queue.length||"横版", render:renderVideo},
+  {id:"publish", num:10, label:"发布记录", badge:"分析", render:renderPublish},
   {group:"资讯聚合 · All in One"},
-  {id:"feedVideo",num:10,label:"最新视频", badge:"周", render:renderFeedVideo},
+  {id:"feedVideo",num:11,label:"最新视频", badge:"周", render:renderFeedVideo},
 ];
 
 $("stUpdated").textContent = D.updatedAt;
@@ -565,6 +578,17 @@ function renderPriceaction(){
       + `</div>`;
   }));
   return `<div class="bar"><span class="note">共 ${s.total} 条批注 · ${s.chapters} 章 · 带笔记 ${s.withNote} · 更新 ${P.updatedAt}</span></div><div class="panel">${rows||'<div class="note">暂无批注</div>'}</div>`;
+}
+
+// ===== 英语口语（由 Yoyo_English_Library.md 同步生成）=====
+function renderEnglish(){
+  const E=window.ENGLISH_LIBRARY_DATA;
+  if(!E) return `<div class="placeholder"><div class="pt">英语口语 · 暂无数据</div><div class="pd">在英语口语 Codex 工作区输入“Summary”，即可同步 Yoyo English Library。</div></div>`;
+  const topics=(E.topics||[]).map(topic=>{
+    const rows=(topic.entries||[]).map(entry=>`<div class="elib-entry"><span class="elib-stars">${bookEsc(entry.stars||"")}</span><strong>${bookEsc(entry.text)}</strong></div>`).join("");
+    return `<section class="panel elib-topic"><h3><span>${bookEsc(topic.name)}</span><span class="elib-count">${topic.entries.length} 条</span></h3>${rows||'<div class="note">暂无表达</div>'}</section>`;
+  }).join("");
+  return `<div class="bar elib-head"><span class="note">共 ${E.total} 条表达 · ${E.topics.length} 个主题 · 更新 ${bookEsc(E.updatedAt||"")}</span><a class="elib-download" href="Yoyo_English_Library.md" target="_blank" rel="noopener">查看 Markdown</a></div>${topics}`;
 }
 
 // ===== 占位模块 =====
