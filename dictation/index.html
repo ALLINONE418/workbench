@@ -436,6 +436,13 @@ const UNITS = [
       explains:[
         {idx:1, term:"猝然", def:"突然；出乎意料。"},
         {idx:2, term:"须臾", def:"极短的时间；片刻。"}
+      ] },
+    { num:null, name:"语文园地二·日积月累", garden:true,
+      words:[], explains:[],
+      quotes:[
+        {idx:1, text:"盛年不重来，一日难再晨。及时当勉励，岁月不待人。", author:"陶渊明"},
+        {idx:2, text:"莫等闲，白了少年头，空悲切。", author:"岳飞"},
+        {idx:3, text:"多少事，从来急；天地转，光阴迫。一万年太久，只争朝夕。", author:"毛泽东"}
       ] }
   ]}
 ];
@@ -447,7 +454,10 @@ function lessonDisplayTitle(l){
   return (l.num + (l.star?"* ":" ")) + l.name;
 }
 function lessonSpokenIntro(l){
-  if(l.garden) return l.name + "，词语听写。";
+  if(l.garden){
+    if(l.quotes && l.quotes.length) return l.name + "，日积月累听写。";
+    return l.name + "，词语听写。";
+  }
   return "第" + l.num + "课，" + l.name + "。";
 }
 function explainSpokenText(l, ex){
@@ -472,13 +482,17 @@ UNITS.forEach((u, ui)=>{
   u.lessons.forEach((l)=>{
     const row = document.createElement('div');
     row.className = 'lesson-row';
-    const wc = l.words.length, ec = l.explains.length;
+    const wc = l.words.length, ec = l.explains.length, qc = (l.quotes||[]).length;
+    const metaParts = [];
+    if(wc) metaParts.push(wc + " 个词语");
+    if(ec) metaParts.push(ec + " 个解释");
+    if(qc) metaParts.push(qc + " 句日积月累");
     const checked = savedSelection ? (savedSelection.includes(l.uid) ? 'checked' : '') : 'checked';
     row.innerHTML = `
       <input type="checkbox" class="lesson-check" data-uid="${l.uid}" ${checked}>
       <div>
-        <div class="lesson-name"><span class="lesson-num">${l.garden ? '' : ('第'+l.num+'课 ')}</span>${l.garden ? l.name : l.name}</div>
-        <div class="lesson-meta">${wc} 个词语${ec? " · " + ec + " 个解释" : ""}</div>
+        <div class="lesson-name"><span class="lesson-num">${l.garden ? '' : ('第'+l.num+'课 ')}</span>${l.name}</div>
+        <div class="lesson-meta">${metaParts.join(' · ')}</div>
       </div>`;
     row.addEventListener('click', (e)=>{
       if(e.target.tagName !== 'INPUT'){
@@ -584,6 +598,7 @@ function buildQueue(){
         queue.push({type:'intro', lesson:l});
         l.words.forEach(w=> queue.push({type:'word', lesson:l, word:w}));
         l.explains.forEach(ex=> queue.push({type:'explain', lesson:l, ex:ex}));
+        (l.quotes||[]).forEach(q=> queue.push({type:'quote', lesson:l, quote:q}));
       }
     });
   });
@@ -670,6 +685,12 @@ function renderStep(){
     statusText.textContent = '正在朗读解释题…';
     textsToSpeak = [ explainSpokenText(l, step.ex) ];
     waitSeconds = parseInt(explainWait.value, 10);
+  } else if(step.type === 'quote'){
+    stepType.textContent = '日积月累听写';
+    ringCenter.textContent = '📜';
+    statusText.textContent = '正在朗读名句…';
+    textsToSpeak = [ step.quote.text, step.quote.text, "作者，" + step.quote.author ];
+    waitSeconds = parseInt(explainWait.value, 10);
   }
 
   setRing(1, false);
@@ -746,9 +767,14 @@ function renderReview(){
     const block = document.createElement('div');
     block.className = 'review-lesson';
     let html = `<h3>${lessonDisplayTitle(l)}</h3>`;
-    html += `<div class="chip-row">` + l.words.map((w,i)=>`<span class="chip">${i+1}. ${w}</span>`).join('') + `</div>`;
+    if(l.words.length){
+      html += `<div class="chip-row">` + l.words.map((w,i)=>`<span class="chip">${i+1}. ${w}</span>`).join('') + `</div>`;
+    }
     if(l.explains.length){
       html += l.explains.map(ex=>`<div class="explain-item"><b>${ex.idx}. ${ex.term}</b>：${ex.def}</div>`).join('');
+    }
+    if(l.quotes && l.quotes.length){
+      html += l.quotes.map(q=>`<div class="explain-item">${q.idx}. ${q.text}<br><span style="color:var(--ink-blue);font-weight:700;">——${q.author}</span></div>`).join('');
     }
     block.innerHTML = html;
     container.appendChild(block);
