@@ -120,6 +120,17 @@
   }
   .subtitle{color:var(--ink-soft);font-size:13.5px;letter-spacing:0.5px;}
 
+  .tts-warning{
+    background:var(--accent-wash-2);
+    border:1.5px solid var(--accent);
+    color:var(--accent-strong);
+    font-size:13px;
+    line-height:1.6;
+    padding:12px 14px;
+    border-radius:var(--radius-md);
+    margin-bottom:16px;
+  }
+
   .card{
     background:var(--card);
     border:1px solid var(--line);
@@ -305,6 +316,8 @@
     <h1>听写课堂</h1>
     <div class="subtitle">五年级上册 · 语文词语表</div>
   </div>
+
+  <div id="ttsWarning" class="tts-warning hidden"></div>
 
   <!-- ===================== 设置页 ===================== -->
   <div id="setup-screen">
@@ -537,9 +550,16 @@ wordWait.addEventListener('input', ()=> wordWaitVal.textContent = wordWait.value
 explainWait.addEventListener('input', ()=> explainWaitVal.textContent = explainWait.value + " 秒");
 rateRange.addEventListener('input', ()=> rateVal.textContent = rateRange.value);
 
+const synth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+function showTtsWarning(msg){
+  const el = document.getElementById('ttsWarning');
+  if(el){ el.textContent = msg; el.classList.remove('hidden'); }
+}
+
 let voices = [];
 function loadVoices(){
-  voices = window.speechSynthesis.getVoices();
+  if(!synth) return;
+  try{ voices = synth.getVoices() || []; }catch(e){ voices = []; }
   const zh = voices.filter(v=>/zh/i.test(v.lang));
   const list = zh.length ? zh : voices;
   voiceSelect.innerHTML = '';
@@ -550,12 +570,27 @@ function loadVoices(){
     voiceSelect.appendChild(opt);
   });
   if(!list.length){
-    voiceSelect.innerHTML = '<option value="">未检测到语音，将使用系统默认</option>';
+    voiceSelect.innerHTML = '<option value="">系统语音加载中…</option>';
   }
 }
-loadVoices();
-if('onvoiceschanged' in window.speechSynthesis){
-  window.speechSynthesis.onvoiceschanged = loadVoices;
+if(!synth){
+  voiceSelect.innerHTML = '<option value="">本浏览器不支持语音朗读</option>';
+  showTtsWarning('当前浏览器不支持语音朗读。如果是在微信、QQ 等App内打开的，请点右上角"···"选择"在浏览器中打开"，改用手机自带浏览器（Chrome / Safari 等）重新打开本页面。');
+}else{
+  loadVoices();
+  try{ if('onvoiceschanged' in synth){ synth.onvoiceschanged = loadVoices; } }catch(e){}
+  let voicePollCount = 0;
+  const voicePollTimer = setInterval(()=>{
+    voicePollCount++;
+    loadVoices();
+    if(voices.length || voicePollCount >= 15){
+      clearInterval(voicePollTimer);
+      if(!voices.length){
+        voiceSelect.innerHTML = '<option value="">未检测到语音列表，仍可尝试朗读</option>';
+        showTtsWarning('未能获取到语音列表，朗读可能无法正常播放。如果是在微信内打开的，请改用手机自带浏览器（Chrome / Safari）打开本页面试试。');
+      }
+    }
+  }, 400);
 }
 function getSelectedVoice(){
   const name = voiceSelect.value;
@@ -564,19 +599,32 @@ function getSelectedVoice(){
 
 /* ============ 语音播报队列 ============ */
 function speakSequence(texts, onDone){
-  window.speechSynthesis.cancel();
+  if(!synth){ onDone && onDone(); return; }
+  try{ synth.cancel(); }catch(e){}
   let i = 0;
   function next(){
     if(i >= texts.length){ onDone && onDone(); return; }
-    const u = new SpeechSynthesisUtterance(texts[i]);
-    const v = getSelectedVoice();
-    if(v) u.voice = v;
-    u.lang = v ? v.lang : 'zh-CN';
-    u.rate = parseFloat(rateRange.value);
-    u.pitch = 1;
-    u.onend = ()=>{ i++; next(); };
-    u.onerror = ()=>{ i++; next(); };
-    window.speechSynthesis.speak(u);
+    let advanced = false;
+    const advance = ()=>{
+      if(advanced) return;
+      advanced = true;
+      clearTimeout(safety);
+      i++; next();
+    };
+    const safety = setTimeout(advance, 6000);
+    try{
+      const u = new SpeechSynthesisUtterance(texts[i]);
+      const v = getSelectedVoice();
+      if(v) u.voice = v;
+      u.lang = v ? v.lang : 'zh-CN';
+      u.rate = parseFloat(rateRange.value);
+      u.pitch = 1;
+      u.onend = advance;
+      u.onerror = advance;
+      synth.speak(u);
+    }catch(e){
+      advance();
+    }
   }
   next();
 }
@@ -650,7 +698,7 @@ function clearTimer(){
 }
 function goToStep(i){
   clearTimer();
-  window.speechSynthesis.cancel();
+  synth && synth.cancel();
   if(i < 0) i = 0;
   if(i >= queue.length){ finishSession(); return; }
   curIndex = i;
@@ -733,13 +781,13 @@ document.getElementById('replayBtn').addEventListener('click', ()=> renderStep()
 pauseBtn.addEventListener('click', ()=>{
   isPaused = !isPaused;
   pauseBtn.textContent = isPaused ? '▶ 继续' : '⏸ 暂停';
-  if(isPaused){ window.speechSynthesis.pause && window.speechSynthesis.pause(); }
-  else{ window.speechSynthesis.resume && window.speechSynthesis.resume(); }
+  if(isPaused){ synth && synth.pause && synth.pause(); }
+  else{ synth && synth.resume && synth.resume(); }
 });
 document.getElementById('finishNowBtn').addEventListener('click', ()=> finishSession());
 document.getElementById('backToSetupBtn').addEventListener('click', ()=>{
   clearTimer();
-  window.speechSynthesis.cancel();
+  synth && synth.cancel();
   showScreen('setup');
 });
 document.getElementById('backToSetupBtn2').addEventListener('click', ()=> showScreen('setup'));
@@ -751,7 +799,7 @@ document.getElementById('restartSameBtn').addEventListener('click', ()=>{
 
 function finishSession(){
   clearTimer();
-  window.speechSynthesis.cancel();
+  synth && synth.cancel();
   renderReview();
   showScreen('review');
 }
