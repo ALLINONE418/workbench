@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="听写课堂">
+<meta name="theme-color" content="#B8472E">
+<title>听写课堂</title>
+<style>
+  :root{
+    --paper:#F2EEE1;
+    --paper-2:#FBF8F0;
+    --card:#FBF8F0;
+    --line:#E2D8C0;
+    --line-strong:#D6C9A8;
+    --ink:#2A251E;
+    --ink-soft:#75695A;
+    --ink-faint:#A69C89;
+    --accent:#B8472E;
+    --accent-strong:#9C3A24;
+    --accent-wash:#EFD9C9;
+    --accent-wash-2:#F6E7DB;
+    --ink-blue:#33566D;
+    --ink-blue-wash:#DDE6EA;
+    --good:#4C7A54;
+    --good-wash:#DEE9DD;
+    --shadow: 0 10px 28px rgba(43,32,18,0.10), 0 2px 6px rgba(43,32,18,0.06);
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --font-display:"Songti SC","STSong","Noto Serif SC","Microsoft YaHei",serif;
+    --font-body:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1C1914;
+      --paper-2:#242019;
+      --card:#26221B;
+      --line:#3A3226;
+      --line-strong:#4A4030;
+      --ink:#EDE6D6;
+      --ink-soft:#B8AD98;
+      --ink-faint:#8A8071;
+      --accent:#E37C57;
+      --accent-strong:#EE9573;
+      --accent-wash:#4A3226;
+      --accent-wash-2:#3A2A21;
+      --ink-blue:#8FB4C9;
+      --ink-blue-wash:#25313A;
+      --good:#8FC099;
+      --good-wash:#25321F;
+      --shadow: 0 10px 28px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1C1914;
+    --paper-2:#242019;
+    --card:#26221B;
+    --line:#3A3226;
+    --line-strong:#4A4030;
+    --ink:#EDE6D6;
+    --ink-soft:#B8AD98;
+    --ink-faint:#8A8071;
+    --accent:#E37C57;
+    --accent-strong:#EE9573;
+    --accent-wash:#4A3226;
+    --accent-wash-2:#3A2A21;
+    --ink-blue:#8FB4C9;
+    --ink-blue-wash:#25313A;
+    --good:#8FC099;
+    --good-wash:#25321F;
+    --shadow: 0 10px 28px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 33px, var(--line) 33px, var(--line) 34px
+      ),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-text-size-adjust:100%;
+    padding:calc(env(safe-area-inset-top) + 18px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 28px) calc(env(safe-area-inset-left) + 16px);
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+
+  .masthead{
+    text-align:center;
+    padding:6px 0 20px;
+  }
+  .masthead .seal{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:46px;height:46px;
+    border-radius:10px;
+    background:var(--accent);
+    color:var(--paper-2);
+    font-family:var(--font-display);
+    font-weight:900;
+    font-size:20px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    transform:rotate(-3deg);
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:900;
+    font-size:26px;
+    margin:0 0 4px;
+    letter-spacing:1px;
+    color:var(--ink);
+  }
+  .subtitle{color:var(--ink-soft);font-size:13.5px;letter-spacing:0.5px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .unit-title{
+    font-family:var(--font-display);
+    font-size:17px;
+    font-weight:700;
+    margin:0 0 10px;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--line-strong);
+  }
+  .unit-title .pick-all{
+    font-family:var(--font-body);
+    font-size:12.5px;
+    color:var(--accent);
+    cursor:pointer;
+    font-weight:700;
+    border:1.5px solid var(--accent);
+    padding:4px 11px;
+    border-radius:20px;
+    user-select:none;
+    white-space:nowrap;
+  }
+  .lesson-row{
+    display:flex;
+    align-items:center;
+    padding:12px 4px;
+    border-bottom:1px dashed var(--line-strong);
+    cursor:pointer;
+  }
+  .lesson-row:last-child{border-bottom:none;}
+  .lesson-row input{
+    width:22px;height:22px;margin-right:13px;accent-color:var(--accent);flex-shrink:0;
+  }
+  .lesson-num{
+    font-family:var(--font-display);
+    font-weight:700;
+    color:var(--accent);
+    margin-right:2px;
+  }
+  .lesson-name{font-size:16px;font-weight:600;color:var(--ink);}
+  .lesson-meta{font-size:12px;color:var(--ink-faint);margin-top:2px;}
+
+  .settings-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 2px;
+    gap:12px;
+  }
+  .settings-row label{font-size:14px;color:var(--ink-soft);flex-shrink:0;}
+  .settings-row .val{
+    font-size:13px;color:var(--accent-strong);font-weight:700;width:48px;text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  input[type=range]{
+    flex:1;accent-color:var(--accent);height:22px;
+  }
+  select{
+    font-size:14px;padding:9px 10px;border-radius:var(--radius-sm);border:1px solid var(--line-strong);
+    background:var(--paper-2);color:var(--ink);flex:1;font-family:var(--font-body);
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:none;
+    border-radius:var(--radius-md);
+    padding:14px 20px;
+    font-size:15.5px;
+    font-weight:700;
+    font-family:var(--font-body);
+    cursor:pointer;
+    color:var(--paper-2);
+    background:var(--accent);
+    box-shadow:0 4px 14px rgba(184,71,46,0.28);
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2.5px solid var(--ink-blue);outline-offset:2px;}
+  .btn.secondary{
+    background:var(--accent-wash-2);
+    color:var(--accent-strong);
+    border:1.5px solid var(--accent);
+    box-shadow:none;
+  }
+  .btn.blue{
+    background:var(--ink-blue-wash);
+    color:var(--ink-blue);
+    border:1.5px solid var(--ink-blue);
+    box-shadow:none;
+  }
+  .btn.ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line-strong);
+    box-shadow:none;
+    font-weight:600;
+  }
+  .btn.big{width:100%;padding:18px;font-size:18px;border-radius:16px;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .hidden{display:none !important;}
+
+  /* Play screen */
+  #play-screen .card{text-align:center;padding:28px 18px 24px;}
+  .progress-label{
+    color:var(--ink-faint);font-size:13px;margin-bottom:8px;
+    font-variant-numeric:tabular-nums;letter-spacing:0.3px;
+  }
+  .lesson-tag{
+    display:inline-block;background:var(--accent-wash);color:var(--accent-strong);
+    font-family:var(--font-display);
+    font-size:13.5px;font-weight:700;padding:6px 15px;border-radius:20px;margin-bottom:14px;
+  }
+  .step-type{font-size:14.5px;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
+
+  .ring-wrap{position:relative;width:168px;height:168px;margin:8px auto 18px;}
+  .ring-wrap svg{transform:rotate(-90deg);width:168px;height:168px;}
+  .ring-bg{fill:none;stroke:var(--line);stroke-width:9;}
+  .ring-fg{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .2s linear;}
+  .ring-center{
+    position:absolute;top:0;left:0;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);
+    font-size:38px;font-weight:800;color:var(--accent-strong);
+    font-variant-numeric:tabular-nums;
+  }
+  .status-text{font-size:14px;color:var(--ink-soft);min-height:20px;margin-bottom:4px;}
+  .controls-row{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+  .controls-row .btn{flex:1;min-width:104px;}
+
+  /* Review */
+  .review-lesson{margin-bottom:22px;}
+  .review-lesson h3{
+    font-family:var(--font-display);
+    font-size:16.5px;color:var(--ink);margin:0 0 10px;
+    padding-bottom:7px;border-bottom:2px solid var(--line-strong);
+    display:flex;align-items:center;gap:8px;
+  }
+  .review-lesson h3::before{
+    content:"✓";
+    display:inline-flex;align-items:center;justify-content:center;
+    width:20px;height:20px;border-radius:50%;
+    background:var(--good-wash);color:var(--good);
+    font-size:12px;font-weight:900;flex-shrink:0;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+  .chip{
+    background:var(--paper-2);border:1px solid var(--line-strong);
+    color:var(--ink);font-size:13.5px;padding:6px 11px;border-radius:var(--radius-sm);
+  }
+  .explain-item{
+    font-size:14px;line-height:1.75;color:var(--ink-soft);margin-bottom:5px;
+    padding-left:2px;
+  }
+  .explain-item b{color:var(--ink-blue);font-weight:700;}
+  .top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;}
+  .top-nav .btn{padding:9px 14px;font-size:13px;}
+
+  footer{text-align:center;color:var(--ink-faint);font-size:11.5px;margin-top:20px;letter-spacing:0.3px;}
+
+  @media (max-width:380px){
+    h1{font-size:23px;}
+    .ring-wrap{width:150px;height:150px;}
+    .ring-wrap svg{width:150px;height:150px;}
+    .controls-row .btn{min-width:90px;padding:12px 14px;font-size:14px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="seal">听写</div>
+    <h1>听写课堂</h1>
+    <div class="subtitle">五年级上册 · 语文词语表</div>
+  </div>
+
+  <!-- ===================== 设置页 ===================== -->
+  <div id="setup-screen">
+    <div class="card" id="units-container"></div>
+
+    <div class="card">
+      <div class="unit-title" style="border-bottom:2px solid var(--line-strong);">听写设置</div>
+      <div class="settings-row">
+        <label>词语等待时间</label>
+        <input type="range" id="wordWait" min="3" max="12" value="5" step="1">
+        <div class="val" id="wordWaitVal">5 秒</div>
+      </div>
+      <div class="settings-row">
+        <label>解释等待时间</label>
+        <input type="range" id="explainWait" min="5" max="25" value="10" step="1">
+        <div class="val" id="explainWaitVal">10 秒</div>
+      </div>
+      <div class="settings-row">
+        <label>朗读语速</label>
+        <input type="range" id="rateRange" min="0.5" max="1.3" value="0.85" step="0.05">
+        <div class="val" id="rateVal">0.85</div>
+      </div>
+      <div class="settings-row">
+        <label>朗读声音</label>
+        <select id="voiceSelect"><option value="">加载中…</option></select>
+      </div>
+      <div class="settings-row" style="justify-content:flex-end;">
+        <button class="btn ghost" id="testVoiceBtn">试听一下</button>
+      </div>
+    </div>
+
+    <button class="btn big" id="startBtn">开始听写</button>
+  </div>
+
+  <!-- ===================== 听写页 ===================== -->
+  <div id="play-screen" class="hidden">
+    <div class="top-nav">
+      <button class="btn ghost" id="backToSetupBtn">← 返回设置</button>
+      <button class="btn secondary" id="finishNowBtn">结束并检查</button>
+    </div>
+    <div class="card">
+      <div class="progress-label" id="progressLabel">第 1 / 1 项</div>
+      <div class="lesson-tag" id="lessonTag">第1课 桂花雨</div>
+      <div class="step-type" id="stepType">词语听写</div>
+
+      <div class="ring-wrap">
+        <svg viewBox="0 0 168 168">
+          <circle class="ring-bg" cx="84" cy="84" r="74"></circle>
+          <circle class="ring-fg" id="ringFg" cx="84" cy="84" r="74" stroke-dasharray="465" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="ring-center" id="ringCenter">🔊</div>
+      </div>
+
+      <div class="status-text" id="statusText">正在朗读…</div>
+
+      <div class="controls-row">
+        <button class="btn blue" id="replayBtn">🔁 重听</button>
+        <button class="btn ghost" id="prevBtn">⬅ 上一题</button>
+        <button class="btn" id="nextBtn">下一题 ▶</button>
+      </div>
+      <div class="controls-row">
+        <button class="btn ghost" id="pauseBtn">⏸ 暂停</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 检查页 ===================== -->
+  <div id="review-screen" class="hidden">
+    <div class="top-nav">
+      <button class="btn ghost" id="backToSetupBtn2">← 返回设置</button>
+      <button class="btn secondary" id="restartSameBtn">🔁 重新听写本次内容</button>
+    </div>
+    <div class="card">
+      <div class="unit-title" style="border-bottom:2px solid var(--line-strong);">今日听写内容</div>
+      <div id="reviewContent"></div>
+    </div>
+  </div>
+
+  <footer>加到主屏幕即可像 App 一样使用 · 朗读依赖手机自带语音 · 完全离线</footer>
+</div>
+
+<script>
+/* ============ 词语数据（人教版五年级上册 第一、二单元） ============ */
+const UNITS = [
+  { unit:"第一单元", lessons:[
+    { num:"1", name:"桂花雨",
+      words:["桂花","糕饼","茶叶","杭州","指指点点","箩筐","香飘十里","沉浸","捡拾","成熟","树丛","姿态","缠绕","故乡","时节","欣赏","完整","使劲","笨重"],
+      explains:[ {idx:1, term:"沉浸", def:"比喻人处于某种气氛或思想活动中。"} ] },
+    { num:"2", name:"落花生",
+      words:["播种","吩咐","榨油","石榴","爱慕","体面","深夜","田亩","便宜","收获","茅亭","高矮","分辨","嫩绿","食品","价钱","可贵","果实","浇水","荒芜"],
+      explains:[
+        {idx:1, term:"爱慕", def:"由于喜欢或敬重而愿意接近。"},
+        {idx:2, term:"体面", def:"面子；身份；体统。"}
+      ] },
+    { num:"3", name:"珍珠鸟", star:true,
+      words:["垂蔓","深幽","熟悉","繁茂","鸡雏","嚓","哟","蓬松","细腻","抚摸","神气十足","享受","嗒嗒","陪伴","窗框","颤动","隐约","娇嫩","眼睑","咂咂嘴","信赖","呼唤"],
+      explains:[
+        {idx:1, term:"繁茂", def:"（草木）多而茂盛。"},
+        {idx:2, term:"深幽", def:"（山水、树林、宫室等）深长而幽静。"}
+      ] },
+    { num:null, name:"语文园地一", garden:true,
+      words:["卧虎藏龙","龙马精神","龙飞凤舞","凤毛麟角","如虎添翼","如鱼得水","鹤立鸡群","一马当先","鼠目寸光","抱头鼠窜","狼心狗肺","狼狈为奸","狡兔三窟","呆若木鸡","虾兵蟹将","黔驴技穷"],
+      explains:[] }
+  ]},
+  { unit:"第二单元", lessons:[
+    { num:"4", name:"冀中的地道战",
+      words:["地道","平原","扫荡","搞垮","封锁","武装","粉碎","简直","广阔","不计其数","堡垒","游击","战争","厕所","隐蔽","毒辣","妨碍","距离","派出","吆喝","武器","拐弯","想方设法","转移","无穷无尽"],
+      explains:[
+        {idx:1, term:"粉碎", def:"使彻底失败或毁灭。"},
+        {idx:2, term:"妨碍", def:"使事情不能顺利进行；阻碍。"},
+        {idx:3, term:"想方设法", def:"想尽办法。"}
+      ] },
+    { num:"5", name:"将相和",
+      words:["无价之宝","召集","大臣","商议","解决","完好无缺","称赞","商量","允诺","典礼","边境","抵御","推辞","侮辱","擅长","拒绝","职位","削弱","战袍","同心协力","和氏璧","蔺相如","勇敢机智","强逼","廉颇","击缶助兴","毫不示弱","贡献","负荆请罪","完璧归赵"],
+      explains:[
+        {idx:1, term:"允诺", def:"应许。"},
+        {idx:2, term:"抵御", def:"抵挡；抵抗。"},
+        {idx:3, term:"侮辱", def:"使对方人格或名誉受到损害，蒙受耻辱。"}
+      ] },
+    { num:"6", name:"什么比猎豹的速度更快",
+      words:["猎豹","鸵鸟","冠军","俯冲","高速公路","搭乘","火箭","发动机","手电筒","赤道","输赢","不胜枚举","游隼","浩瀚","难以置信"],
+      explains:[
+        {idx:1, term:"俯冲", def:"（飞机等）以高速度和大角度向下飞。"},
+        {idx:2, term:"浩瀚", def:"水势盛大。"},
+        {idx:3, term:"呼啸", def:"发出高而长的声音。"}
+      ] },
+    { num:"24", name:"“诺曼底号”遇难记",
+      words:["弥漫","船桅","幽灵","翘首","船舷","剖开","半裸","呛水","维持","猝然","酣睡","嘈杂","肇祸","殴斗","可鄙","调遣","穿梭","须臾","履行","机械师","你推我搡","小心翼翼","失魂落魄","葬身鱼腹","汹涌湍急"],
+      explains:[
+        {idx:1, term:"猝然", def:"突然；出乎意料。"},
+        {idx:2, term:"须臾", def:"极短的时间；片刻。"}
+      ] }
+  ]}
+];
+
+UNITS.forEach((u,ui)=>u.lessons.forEach((l,li)=>{ l.uid = ui+"-"+li; }));
+
+function lessonDisplayTitle(l){
+  if(l.garden) return l.name;
+  return (l.num + (l.star?"* ":" ")) + l.name;
+}
+function lessonSpokenIntro(l){
+  if(l.garden) return l.name + "，词语听写。";
+  return "第" + l.num + "课，" + l.name + "。";
+}
+function explainSpokenText(l, ex){
+  return "第" + l.num + "课后面第" + ex.idx + "点：" + ex.term + "，请解释。";
+}
+
+/* ============ 设置页勾选列表（记住上次选择） ============ */
+const unitsContainer = document.getElementById('units-container');
+let savedSelection = null;
+try{
+  const raw = localStorage.getItem('dictation_selection_v1');
+  if(raw) savedSelection = JSON.parse(raw);
+}catch(e){}
+
+UNITS.forEach((u, ui)=>{
+  const block = document.createElement('div');
+  block.style.marginBottom = "4px";
+  const title = document.createElement('div');
+  title.className = 'unit-title';
+  title.innerHTML = `<span>${u.unit}</span><span class="pick-all" data-ui="${ui}">全选/取消</span>`;
+  block.appendChild(title);
+  u.lessons.forEach((l)=>{
+    const row = document.createElement('div');
+    row.className = 'lesson-row';
+    const wc = l.words.length, ec = l.explains.length;
+    const checked = savedSelection ? (savedSelection.includes(l.uid) ? 'checked' : '') : 'checked';
+    row.innerHTML = `
+      <input type="checkbox" class="lesson-check" data-uid="${l.uid}" ${checked}>
+      <div>
+        <div class="lesson-name"><span class="lesson-num">${l.garden ? '' : ('第'+l.num+'课 ')}</span>${l.garden ? l.name : l.name}</div>
+        <div class="lesson-meta">${wc} 个词语${ec? " · " + ec + " 个解释" : ""}</div>
+      </div>`;
+    row.addEventListener('click', (e)=>{
+      if(e.target.tagName !== 'INPUT'){
+        const cb = row.querySelector('input');
+        cb.checked = !cb.checked;
+      }
+      saveSelection();
+    });
+    block.appendChild(row);
+  });
+  unitsContainer.appendChild(block);
+});
+unitsContainer.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('pick-all')){
+    const ui = e.target.dataset.ui;
+    const boxes = [...document.querySelectorAll(`.lesson-check`)].filter(cb=>{
+      const [u] = cb.dataset.uid.split('-');
+      return u === ui;
+    });
+    const allChecked = boxes.every(b=>b.checked);
+    boxes.forEach(b=> b.checked = !allChecked);
+    saveSelection();
+  }
+});
+function saveSelection(){
+  try{
+    const uids = [...document.querySelectorAll('.lesson-check')].filter(cb=>cb.checked).map(cb=>cb.dataset.uid);
+    localStorage.setItem('dictation_selection_v1', JSON.stringify(uids));
+  }catch(e){}
+}
+
+/* ============ 设置控件联动 ============ */
+const wordWait = document.getElementById('wordWait');
+const wordWaitVal = document.getElementById('wordWaitVal');
+const explainWait = document.getElementById('explainWait');
+const explainWaitVal = document.getElementById('explainWaitVal');
+const rateRange = document.getElementById('rateRange');
+const rateVal = document.getElementById('rateVal');
+const voiceSelect = document.getElementById('voiceSelect');
+
+wordWait.addEventListener('input', ()=> wordWaitVal.textContent = wordWait.value + " 秒");
+explainWait.addEventListener('input', ()=> explainWaitVal.textContent = explainWait.value + " 秒");
+rateRange.addEventListener('input', ()=> rateVal.textContent = rateRange.value);
+
+let voices = [];
+function loadVoices(){
+  voices = window.speechSynthesis.getVoices();
+  const zh = voices.filter(v=>/zh/i.test(v.lang));
+  const list = zh.length ? zh : voices;
+  voiceSelect.innerHTML = '';
+  list.forEach((v)=>{
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = v.name + " (" + v.lang + ")";
+    voiceSelect.appendChild(opt);
+  });
+  if(!list.length){
+    voiceSelect.innerHTML = '<option value="">未检测到语音，将使用系统默认</option>';
+  }
+}
+loadVoices();
+if('onvoiceschanged' in window.speechSynthesis){
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function getSelectedVoice(){
+  const name = voiceSelect.value;
+  return voices.find(v=>v.name===name) || null;
+}
+
+/* ============ 语音播报队列 ============ */
+function speakSequence(texts, onDone){
+  window.speechSynthesis.cancel();
+  let i = 0;
+  function next(){
+    if(i >= texts.length){ onDone && onDone(); return; }
+    const u = new SpeechSynthesisUtterance(texts[i]);
+    const v = getSelectedVoice();
+    if(v) u.voice = v;
+    u.lang = v ? v.lang : 'zh-CN';
+    u.rate = parseFloat(rateRange.value);
+    u.pitch = 1;
+    u.onend = ()=>{ i++; next(); };
+    u.onerror = ()=>{ i++; next(); };
+    window.speechSynthesis.speak(u);
+  }
+  next();
+}
+document.getElementById('testVoiceBtn').addEventListener('click', ()=>{
+  speakSequence(["同学们好，这是语音试听。桂花，桂花。"]);
+});
+
+/* ============ 构建听写队列 ============ */
+let queue = [];
+let selectedLessons = [];
+function buildQueue(){
+  queue = [];
+  selectedLessons = [];
+  UNITS.forEach(u=>{
+    u.lessons.forEach(l=>{
+      const cb = document.querySelector(`.lesson-check[data-uid="${l.uid}"]`);
+      if(cb && cb.checked){
+        selectedLessons.push(l);
+        queue.push({type:'intro', lesson:l});
+        l.words.forEach(w=> queue.push({type:'word', lesson:l, word:w}));
+        l.explains.forEach(ex=> queue.push({type:'explain', lesson:l, ex:ex}));
+      }
+    });
+  });
+}
+
+/* ============ 播放状态 ============ */
+let curIndex = 0;
+let timerHandle = null;
+let remaining = 0;
+let totalDur = 0;
+let isPaused = false;
+
+const setupScreen = document.getElementById('setup-screen');
+const playScreen = document.getElementById('play-screen');
+const reviewScreen = document.getElementById('review-screen');
+const progressLabel = document.getElementById('progressLabel');
+const lessonTag = document.getElementById('lessonTag');
+const stepType = document.getElementById('stepType');
+const statusText = document.getElementById('statusText');
+const ringFg = document.getElementById('ringFg');
+const ringCenter = document.getElementById('ringCenter');
+const pauseBtn = document.getElementById('pauseBtn');
+
+const RING_LEN = 2 * Math.PI * 74;
+ringFg.setAttribute('stroke-dasharray', RING_LEN);
+
+function showScreen(name){
+  setupScreen.classList.add('hidden');
+  playScreen.classList.add('hidden');
+  reviewScreen.classList.add('hidden');
+  if(name==='setup') setupScreen.classList.remove('hidden');
+  if(name==='play') playScreen.classList.remove('hidden');
+  if(name==='review') reviewScreen.classList.remove('hidden');
+}
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  buildQueue();
+  if(queue.length === 0){
+    alert('请至少选择一课再开始～');
+    return;
+  }
+  curIndex = -1;
+  showScreen('play');
+  goToStep(0);
+});
+
+function clearTimer(){
+  if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+}
+function goToStep(i){
+  clearTimer();
+  window.speechSynthesis.cancel();
+  if(i < 0) i = 0;
+  if(i >= queue.length){ finishSession(); return; }
+  curIndex = i;
+  isPaused = false;
+  pauseBtn.textContent = '⏸ 暂停';
+  renderStep();
+}
+function renderStep(){
+  const step = queue[curIndex];
+  const l = step.lesson;
+  progressLabel.textContent = `第 ${curIndex+1} / ${queue.length} 项`;
+  lessonTag.textContent = lessonDisplayTitle(l);
+
+  let textsToSpeak = [];
+  let waitSeconds = parseInt(wordWait.value, 10);
+
+  if(step.type === 'intro'){
+    stepType.textContent = '课文播报';
+    ringCenter.textContent = '📖';
+    statusText.textContent = '正在播报课次…';
+    textsToSpeak = [ lessonSpokenIntro(l) ];
+    waitSeconds = 1;
+  } else if(step.type === 'word'){
+    stepType.textContent = '词语听写';
+    ringCenter.textContent = '✏️';
+    statusText.textContent = '正在朗读词语…';
+    textsToSpeak = [ step.word, step.word ];
+    waitSeconds = parseInt(wordWait.value, 10);
+  } else if(step.type === 'explain'){
+    stepType.textContent = '解释听写';
+    ringCenter.textContent = '💡';
+    statusText.textContent = '正在朗读解释题…';
+    textsToSpeak = [ explainSpokenText(l, step.ex) ];
+    waitSeconds = parseInt(explainWait.value, 10);
+  }
+
+  setRing(1, false);
+  speakSequence(textsToSpeak, ()=>{
+    if(step.type === 'intro'){
+      goToStep(curIndex+1);
+      return;
+    }
+    statusText.textContent = '请写下来吧，倒计时结束自动进入下一题';
+    startCountdown(waitSeconds);
+  });
+}
+function setRing(fraction, animate){
+  const offset = RING_LEN * (1 - fraction);
+  ringFg.style.transition = animate ? 'stroke-dashoffset .2s linear' : 'none';
+  ringFg.style.strokeDashoffset = offset;
+}
+function startCountdown(seconds){
+  clearTimer();
+  totalDur = seconds;
+  remaining = seconds;
+  ringCenter.textContent = remaining;
+  setRing(remaining/totalDur, false);
+  timerHandle = setInterval(()=>{
+    if(isPaused) return;
+    remaining -= 0.1;
+    if(remaining <= 0){
+      clearTimer();
+      goToStep(curIndex+1);
+      return;
+    }
+    ringCenter.textContent = Math.ceil(remaining);
+    setRing(remaining/totalDur, true);
+  }, 100);
+}
+
+document.getElementById('nextBtn').addEventListener('click', ()=> goToStep(curIndex+1));
+document.getElementById('prevBtn').addEventListener('click', ()=> goToStep(curIndex-1));
+document.getElementById('replayBtn').addEventListener('click', ()=> renderStep());
+pauseBtn.addEventListener('click', ()=>{
+  isPaused = !isPaused;
+  pauseBtn.textContent = isPaused ? '▶ 继续' : '⏸ 暂停';
+  if(isPaused){ window.speechSynthesis.pause && window.speechSynthesis.pause(); }
+  else{ window.speechSynthesis.resume && window.speechSynthesis.resume(); }
+});
+document.getElementById('finishNowBtn').addEventListener('click', ()=> finishSession());
+document.getElementById('backToSetupBtn').addEventListener('click', ()=>{
+  clearTimer();
+  window.speechSynthesis.cancel();
+  showScreen('setup');
+});
+document.getElementById('backToSetupBtn2').addEventListener('click', ()=> showScreen('setup'));
+document.getElementById('restartSameBtn').addEventListener('click', ()=>{
+  curIndex = -1;
+  showScreen('play');
+  goToStep(0);
+});
+
+function finishSession(){
+  clearTimer();
+  window.speechSynthesis.cancel();
+  renderReview();
+  showScreen('review');
+}
+function renderReview(){
+  const container = document.getElementById('reviewContent');
+  container.innerHTML = '';
+  const list = selectedLessons.length ? selectedLessons : [];
+  if(list.length === 0){
+    container.innerHTML = '<div style="color:var(--ink-soft);">还没有听写内容。</div>';
+    return;
+  }
+  list.forEach(l=>{
+    const block = document.createElement('div');
+    block.className = 'review-lesson';
+    let html = `<h3>${lessonDisplayTitle(l)}</h3>`;
+    html += `<div class="chip-row">` + l.words.map((w,i)=>`<span class="chip">${i+1}. ${w}</span>`).join('') + `</div>`;
+    if(l.explains.length){
+      html += l.explains.map(ex=>`<div class="explain-item"><b>${ex.idx}. ${ex.term}</b>：${ex.def}</div>`).join('');
+    }
+    block.innerHTML = html;
+    container.appendChild(block);
+  });
+}
+
+showScreen('setup');
+</script>
+</body>
+</html>
