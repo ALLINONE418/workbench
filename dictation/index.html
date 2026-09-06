@@ -151,18 +151,6 @@
     padding-bottom:10px;
     border-bottom:2px solid var(--line-strong);
   }
-  .unit-title .pick-all{
-    font-family:var(--font-body);
-    font-size:12.5px;
-    color:var(--accent);
-    cursor:pointer;
-    font-weight:700;
-    border:1.5px solid var(--accent);
-    padding:4px 11px;
-    border-radius:20px;
-    user-select:none;
-    white-space:nowrap;
-  }
   .lesson-row{
     display:flex;
     align-items:center;
@@ -444,7 +432,7 @@ const UNITS = [
         {idx:2, term:"浩瀚", def:"水势盛大。"},
         {idx:3, term:"呼啸", def:"发出高而长的声音。"}
       ] },
-    { num:"24", name:"“诺曼底号”遇难记",
+    { num:"7", name:"“诺曼底号”遇难记",
       words:["弥漫","船桅","幽灵","翘首","船舷","剖开","半裸","呛水","维持","猝然","酣睡","嘈杂","肇祸","殴斗","可鄙","调遣","穿梭","须臾","履行","机械师","你推我搡","小心翼翼","失魂落魄","葬身鱼腹","汹涌湍急"],
       explains:[
         {idx:1, term:"猝然", def:"突然；出乎意料。"},
@@ -677,7 +665,7 @@ UNITS.forEach((u, ui)=>{
   block.style.marginBottom = "4px";
   const title = document.createElement('div');
   title.className = 'unit-title';
-  title.innerHTML = `<span>${u.unit}</span><span class="pick-all" data-ui="${ui}">全选/取消</span>`;
+  title.innerHTML = `<span>${u.unit}</span>`;
   block.appendChild(title);
   u.lessons.forEach((l)=>{
     const row = document.createElement('div');
@@ -687,7 +675,7 @@ UNITS.forEach((u, ui)=>{
     if(wc) metaParts.push(wc + " 个词语");
     if(ec) metaParts.push(ec + " 个解释");
     if(qc) metaParts.push(qc + " 句日积月累");
-    const checked = savedSelection ? (savedSelection.includes(l.uid) ? 'checked' : '') : 'checked';
+    const checked = savedSelection ? (savedSelection.includes(l.uid) ? 'checked' : '') : '';
     row.innerHTML = `
       <input type="checkbox" class="lesson-check" data-uid="${l.uid}" ${checked}>
       <div>
@@ -704,18 +692,6 @@ UNITS.forEach((u, ui)=>{
     block.appendChild(row);
   });
   unitsContainer.appendChild(block);
-});
-unitsContainer.addEventListener('click', (e)=>{
-  if(e.target.classList.contains('pick-all')){
-    const ui = e.target.dataset.ui;
-    const boxes = [...document.querySelectorAll(`.lesson-check`)].filter(cb=>{
-      const [u] = cb.dataset.uid.split('-');
-      return u === ui;
-    });
-    const allChecked = boxes.every(b=>b.checked);
-    boxes.forEach(b=> b.checked = !allChecked);
-    saveSelection();
-  }
 });
 function saveSelection(){
   try{
@@ -832,8 +808,8 @@ function buildQueue(){
         selectedLessons.push(l);
         queue.push({type:'intro', lesson:l});
         l.words.forEach(w=> queue.push({type:'word', lesson:l, word:w}));
-        l.explains.forEach(ex=> queue.push({type:'explain', lesson:l, ex:ex}));
         (l.quotes||[]).forEach(q=> queue.push({type:'quote', lesson:l, quote:q}));
+        l.explains.forEach(ex=> queue.push({type:'explain', lesson:l, ex:ex}));
       }
     });
   });
